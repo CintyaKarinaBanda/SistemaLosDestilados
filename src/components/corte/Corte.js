@@ -10,6 +10,8 @@ const Corte = () => {
     const [sujetos, setSujetos] = useState(0);
     const [costos, setCostos] = useState(0);
 
+    const [gastos, setGastos] = useState(0);
+
     const [mesActual, setMesActual] = useState('');
     const [anioActual, setAnioActual] = useState(new Date().getFullYear());
 
@@ -27,11 +29,11 @@ const Corte = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const querySnapshot = await getDocs(collection(db, 'sales'));
+                const querySnapshotCorte = await getDocs(collection(db, 'sales'));
     
-                let total = 0, ganancias = 0, negocio = 0, sujetos = 0, costos = 0;
+                let total = 0, ganancias = 0, negocio = 0, sujetos = 0, costos = 0, sumaGastos = 0;
     
-                querySnapshot.docs
+                querySnapshotCorte.docs
                     .map(doc => doc.data())
                     .filter(({ fechaCompra }) => {
                         const fecha = new Date(fechaCompra);
@@ -55,6 +57,21 @@ const Corte = () => {
                 setNegocio(parseFloat(negocio.toFixed(2)));
                 setSujetos(parseFloat(sujetos.toFixed(2)));
                 setCostos(parseFloat(costos.toFixed(2)));
+
+                const querySnapshotBills = await getDocs(collection(db, 'bills'));
+                querySnapshotBills.docs
+                    .map(doc => doc.data())
+                    .filter(({ fechaGasto }) => {
+                        const fecha = new Date(fechaGasto);
+                        return (
+                            fecha.toLocaleString('default', { month: 'long' }).toLowerCase() === mesActual.toLowerCase() &&
+                            fecha.getFullYear() === anioActual
+                        );
+                    })
+                    .forEach(({ monto }) => {
+                        sumaGastos += parseFloat(monto);
+                    });
+                setGastos(sumaGastos);
     
             } catch (error) {
                 console.error("Error fetching documents: ", error);
@@ -65,7 +82,7 @@ const Corte = () => {
     }, [mesActual, anioActual]);
     
     return (
-        <div className="container mbz-5">
+        <div className="container mb-5">
             <div className="card">
                 <div className="card-header d-flex justify-content-between align-items-center">
                     <h1 className="fw-bold ms-2">Corte Mensual</h1>
@@ -90,8 +107,8 @@ const Corte = () => {
                         </select>
                     </div>
                 </div>
-                <div className="card-body">
-                    <div className="table-responsive">
+                <div className="card-body row">
+                    <div className="table-responsive col-10">
                         <table className="table table-hover">
                             <thead>
                                 <tr>
@@ -109,6 +126,20 @@ const Corte = () => {
                                     <td>$ {ganancias}</td>
                                     <td>$ {negocio}</td>
                                     <td>$ {sujetos}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className='col-2'>
+                        <table className="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Gastos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>$ {gastos}</td>
                                 </tr>
                             </tbody>
                         </table>

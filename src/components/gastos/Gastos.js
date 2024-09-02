@@ -49,8 +49,11 @@ const Gastos = () => {
     };
     //Funcion de Inicio
     useEffect(() => {
-        fetchData();
-    }, [mesActual, anioActual]); 
+        if (mesActual) { 
+            fetchData();
+        }
+    }, [mesActual, anioActual]);
+    
     
 
     const handleDelete = async (id) => {

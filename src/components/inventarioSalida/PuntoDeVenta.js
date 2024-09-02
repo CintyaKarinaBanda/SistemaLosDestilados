@@ -46,6 +46,9 @@ const PuntoDeVenta = ({venta, isEditing}) => {
     const [fechaCompraCheck, setFechaCompraCheck] = useState(venta?.fechaCompraCheck || false);
     const [fechaCompra, setFechaCompra] = useState(venta?.fechaCompra || new Date().toISOString().slice(0, 10));
 
+    const [tipoPago, setTipoPago] = useState(venta?.tipoPago || '');
+
+
     const [productosData, setProductosData] = useState([]);
 
     useEffect(() => {
@@ -185,6 +188,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
             total: total,
             envio: montoEnvio,
             productos: productos,
+            tipoPago: tipoPago,
 
             fechaCompraCheck: true,
             proveedorCheck: true,
@@ -379,6 +383,51 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                             </div>
                         ))}
                     </div>
+
+                    <div className="row mb-3">
+                        <div className="col-md-6">
+                            <div className="form-check">
+                                <input
+                                    type="radio"
+                                    id="pagoEfectivo"
+                                    name="tipoPago"
+                                    value="efectivo"
+                                    className="form-check-input"
+                                    checked={tipoPago === 'efectivo'}
+                                    onChange={(e) => setTipoPago(e.target.value)}
+                                />
+                                <label htmlFor="pagoEfectivo" className="form-check-label">Efectivo</label>
+                            </div>
+
+                            <div className="form-check">
+                                <input
+                                    type="radio"
+                                    id="pagoTarjeta"
+                                    name="tipoPago"
+                                    value="tarjeta"
+                                    className="form-check-input"
+                                    checked={tipoPago === 'tarjeta'}
+                                    onChange={(e) => setTipoPago(e.target.value)}
+                                />
+                                <label htmlFor="pagoTarjeta" className="form-check-label">Tarjeta</label>
+                            </div>
+
+                            <div className="form-check">
+                                <input
+                                    type="radio"
+                                    id="pagoTransferencia"
+                                    name="tipoPago"
+                                    value="transferencia"
+                                    className="form-check-input"
+                                    checked={tipoPago === 'transferencia'}
+                                    onChange={(e) => setTipoPago(e.target.value)}
+                                />
+                                <label htmlFor="pagoTransferencia" className="form-check-label">Transferencia</label>
+                            </div>
+                        </div>
+                        </div>
+
+
                     <div className="row mb-3">
                         <div className="col-md-6">
                             <div className="form-check d-flex align-items-center">

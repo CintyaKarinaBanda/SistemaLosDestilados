@@ -57,7 +57,6 @@ const Productos = () => {
           <button className="btn btn-primary" onClick={() => handleShow(null, false)}>
             Agregar Producto
           </button>
-          <select></select>
         </div>
         <div className="card-body">
           <div className="table-responsive">

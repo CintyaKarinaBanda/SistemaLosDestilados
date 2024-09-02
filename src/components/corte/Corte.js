@@ -42,11 +42,11 @@ const Corte = () => {
                     })
                     .forEach(({ total: saleTotal, productos }) => {
                         total += saleTotal;
-                        productos.forEach(({ ganancia, negocio: prodNegocio, sujetos: prodSujetos, costo }) => {
-                            ganancias += parseFloat(ganancia);
-                            negocio += parseFloat(prodNegocio);
-                            sujetos += parseFloat(prodSujetos);
-                            costos += parseFloat(costo);
+                        productos.forEach(({ ganancia, negocio: prodNegocio, sujetos: prodSujetos, costo, cantidad}) => {
+                            ganancias += parseFloat(ganancia) * parseFloat(cantidad);
+                            negocio += parseFloat(prodNegocio) * parseFloat(cantidad);
+                            sujetos += parseFloat(prodSujetos) * parseFloat(cantidad);
+                            costos += parseFloat(costo) * parseFloat(cantidad);
                         });
                     });
     
@@ -104,9 +104,9 @@ const Corte = () => {
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>$ {ganancias}</td>
-                                    <td>$ {costos}</td>
                                     <td>$ {total}</td>
+                                    <td>$ {costos}</td>
+                                    <td>$ {ganancias}</td>
                                     <td>$ {negocio}</td>
                                     <td>$ {sujetos}</td>
                                 </tr>

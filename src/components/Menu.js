@@ -23,7 +23,7 @@ const Menu = () => {
                             <NavDropdown.Item href="/InventarioSalida" key="2">Salida</NavDropdown.Item>
                         </NavDropdown>
                         <Nav.Link href="/PuntoDeVenta">Punto de Venta</Nav.Link>
-                        <Nav.Link href="/">Gastos</Nav.Link>
+                        <Nav.Link href="/Gastos">Gastos</Nav.Link>
                         <Nav.Link href="/Corte">Corte</Nav.Link>
                         <Nav.Link href="/">Estadisticas</Nav.Link>
                         <Nav.Link href="/">Cotización</Nav.Link>

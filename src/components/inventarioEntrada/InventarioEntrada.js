@@ -103,7 +103,7 @@ const InventarioEntrada = () => {
         </div>
         <div className="card-body">
           <div className="row mb-3">
-            <div className="d-flex col-4 align-items-center">
+            <div className="col-md-6 col-lg-6 mb-4 mb-md-0 d-flex align-items-center">
               <select
                 className="form-select me-2"
                 value={mesActual}
@@ -120,15 +120,17 @@ const InventarioEntrada = () => {
                 {[anioActual - 3, anioActual - 2, anioActual - 1, anioActual].map((anio) => (<option key={anio} value={anio}>{anio}</option>))}
               </select>
             </div>
-            <div className="col-3"></div>
-            <div className="d-flex col-5 align-items-center">
+
+            <div className="col-md-6 col-lg-6 mb-2 mb-md-0 d-flex align-items-center">
               <select
                 className="form-select me-2"
                 value={categoria}
                 onChange={(e) => setCategoria(e.target.value)}
               >
                 <option value=''>Categorias</option>
-                <option value='fechaEntrada'>Fecha de Entrada</option>
+                <option value='fechaCompra'>Fecha de Compra</option>
+                <option value='noNota'>Número de Nota</option>
+                <option value='nombreCliente'>Nombre del Cliente</option>
                 <option value='codigosQR'>Código QR</option>
                 <option value='nombre'>Nombre del Producto</option>
               </select>

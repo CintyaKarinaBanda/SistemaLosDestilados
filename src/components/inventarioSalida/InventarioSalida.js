@@ -73,8 +73,10 @@ const InventarioSalida = () => {
                 .map(doc => ({ id: doc.id, ...doc.data() }))
                 .filter(doc => {
                     const fechaCompra = new Date(doc.fechaCompra);
-                    const mesCompra = fechaCompra.toLocaleString('default', { month: 'long' });
-                    const anioCompra = fechaCompra.getFullYear();
+                    const fechaCompraAjustada = new Date(fechaCompra.getTime() + (fechaCompra.getTimezoneOffset() * 60000));
+                    
+                    const mesCompra = fechaCompraAjustada.toLocaleString('default', { month: 'long' });
+                    const anioCompra = fechaCompraAjustada.getFullYear();
                     return mesCompra.toLowerCase() === mesActual.toLowerCase() && anioCompra === anioActual;
                 })
                 .sort((a, b) => b.noNota - a.noNota);

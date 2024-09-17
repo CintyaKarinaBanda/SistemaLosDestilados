@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useAuth } from './AuthContext';
 
 function Login() {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (password === process.env.REACT_APP_PASSWORD || password === process.env.REACT_APP_ADMIN_PASSWORD) {
-            localStorage.setItem('authToken', password);
+            login(password);
             navigate('/PuntoDeVenta');
         } else {
             alert('Credenciales incorrectas');

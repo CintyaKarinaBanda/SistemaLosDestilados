@@ -10,29 +10,38 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Corte from './components/corte/Corte';
 import Login from './components/Login'; 
 import Gastos from './components/gastos/Gastos';
-
-const isAuthenticated = () => {
-    return !!localStorage.getItem('authToken');
-};
+import { useAuth, AuthProvider } from './components/AuthContext';
 
 function App() {
-  return (
-    <Router>
-      <div className='mt-5 mb-8'>.</div>
-      <Menu />
-      <div className="container mt-5">
-        <Routes>
-          <Route path="/Login" element={<Login />} />
-          <Route path="/InventarioSalida" element={isAuthenticated() ? <InventarioSalida /> : <Navigate to="/Login" />} />
-          <Route path="/InventarioEntrada" element={isAuthenticated() ? <InventarioEntrada /> : <Navigate to="/Login" />} />
-          <Route path="/PuntoDeVenta" element={isAuthenticated() ? <PuntoDeVenta venta={null} isEditing={false} /> : <Navigate to="/Login" />} />
-          <Route path="/Productos" element={isAuthenticated() ? <Productos /> : <Navigate to="/Login" />} />
-          <Route path="/Corte" element={isAuthenticated() ? <Corte /> : <Navigate to="/Login" />} />
-          <Route path="/Gastos" element={isAuthenticated() ? <Gastos /> : <Navigate to="/Login" />} />
-        </Routes>
-      </div>
-    </Router>
-  );
+    const { auth } = useAuth();
+
+    if (auth === null) {
+        // Mientras estamos verificando la autenticación, podrías mostrar un loader o nada
+        return <div>Loading...</div>;
+    }
+
+    return (
+        <Router>
+            <div className='mt-5 mb-8'>.</div>
+            <Menu />
+            <div className="container mt-5">
+                <Routes>
+                    <Route path="/Login" element={<Login />} />
+                    <Route path="/InventarioSalida" element={auth ? <InventarioSalida /> : <Navigate to="/Login" />} />
+                    <Route path="/InventarioEntrada" element={auth ? <InventarioEntrada /> : <Navigate to="/Login" />} />
+                    <Route path="/PuntoDeVenta" element={auth ? <PuntoDeVenta venta={null} isEditing={false} /> : <Navigate to="/Login" />} />
+                    <Route path="/Productos" element={auth ? <Productos /> : <Navigate to="/Login" />} />
+                    <Route path="/Corte" element={auth ? <Corte /> : <Navigate to="/Login" />} />
+                    <Route path="/Gastos" element={auth ? <Gastos /> : <Navigate to="/Login" />} />
+                </Routes>
+            </div>
+        </Router>
+    );
 }
 
-export default App;
+// eslint-disable-next-line import/no-anonymous-default-export
+export default () => (
+    <AuthProvider>
+        <App />
+    </AuthProvider>
+);

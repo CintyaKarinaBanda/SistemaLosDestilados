@@ -35,12 +35,11 @@ const Gastos = () => {
             const billsList = querySnapshot.docs
                 .map(doc => ({ id: doc.id, ...doc.data() }))
                 .filter(doc => {
-                    const fechaGasto = new Date(doc.fechaGasto);
+                    const fechaGasto = new Date(`${doc.fechaGasto}T00:00:00`);
                     const mesEntrada = fechaGasto.toLocaleString('default', { month: 'long' });
-                    const anioEntrada = fechaGasto.getFullYear();
-                    return mesEntrada.toLowerCase() === mesActual.toLowerCase() && anioEntrada === anioActual;
+                    const anioEntrada = fechaGasto.getFullYear();                    
+                    return mesEntrada.toLowerCase() === mesActual.toLowerCase() && anioEntrada === Number(anioActual);
                 });
-            console.log(billsList);
             
             setGastos(billsList);
         } catch (error) {
@@ -48,12 +47,13 @@ const Gastos = () => {
         }
     };
     //Funcion de Inicio
-    useEffect(() => {
-        if (mesActual) { 
+    useEffect(() => {        
+        if (mesActual) {             
             fetchData();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mesActual, anioActual]);
-    
+
     
 
     const handleDelete = async (id) => {
@@ -71,6 +71,8 @@ const Gastos = () => {
         setMonto(gasto.monto);
         setConcepto(gasto.concepto);
         setBillId(id);
+        setfechaGastoCheck(gasto.fechaGastoCheck);
+        setfechaGasto(gasto.fechaGasto);
     };
 
     const guardarGatos = async() =>{
@@ -85,7 +87,7 @@ const Gastos = () => {
             if (isEditing) {
                 const billRef = doc(db, 'bills', billId);
                 await updateDoc(billRef, billData);
-                
+                alert('Regirtro actulizado');
             } else {
                 await addDoc(collection(db, 'bills'), billData);
             }
@@ -141,7 +143,7 @@ const Gastos = () => {
                             </div>
                             <div className="d-flex mt-4 justify-content-between">
                                 <button type="button" className="btn btn-secondary w-50 me-2" onClick={() => { setConcepto(''); setMonto(''); }}>Limpiar</button>
-                                <button type="button" className="btn btn-primary w-50 ms-2" onClick={guardarGatos}>{isEditing ? 'Editar Venta' : 'Generar Venta'}</button>
+                                <button type="button" className="btn btn-primary w-50 ms-2" onClick={guardarGatos}>{isEditing ? 'Editar Gasto' : 'Generar Gasto'}</button>
                             </div>
                         </div>
 
@@ -163,7 +165,7 @@ const Gastos = () => {
                                     value={anioActual}
                                     onChange={(e) => setAnioActual(e.target.value)}
                                 >
-                                    {[anioActual, anioActual - 1, anioActual - 2].map((anio) => (<option key={anio} value={anio}>{anio}</option>))}
+                                    {[new Date().getFullYear() - 3, new Date().getFullYear() - 2, new Date().getFullYear() - 1, new Date().getFullYear()].map((anio) => (<option key={anio} value={anio}>{anio}</option>))}
                                 </select>
                             </div>
                             <div className="table-responsive">

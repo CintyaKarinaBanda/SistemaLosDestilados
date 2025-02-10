@@ -39,7 +39,7 @@ const Corte = () => {
                         const fecha = new Date(fechaCompra);
                         return (
                             fecha.toLocaleString('default', { month: 'long' }).toLowerCase() === mesActual.toLowerCase() &&
-                            fecha.getFullYear() === anioActual
+                            fecha.getFullYear() === Number(anioActual)
                         );
                     })
                     .forEach(({ total: saleTotal, productos }) => {
@@ -65,7 +65,7 @@ const Corte = () => {
                         const fecha = new Date(fechaGasto);
                         return (
                             fecha.toLocaleString('default', { month: 'long' }).toLowerCase() === mesActual.toLowerCase() &&
-                            fecha.getFullYear() === anioActual
+                            fecha.getFullYear() === Number(anioActual)
                         );
                     })
                     .forEach(({ monto }) => {
@@ -103,7 +103,7 @@ const Corte = () => {
                             value={anioActual} 
                             onChange={(e) => setAnioActual(e.target.value)}
                         >
-                            {[anioActual, anioActual - 1, anioActual - 2].map((anio) => ( <option key={anio} value={anio}>{anio}</option> ))}
+                        {[new Date().getFullYear() - 3, new Date().getFullYear() - 2, new Date().getFullYear() - 1, new Date().getFullYear()].map((anio) => (<option key={anio} value={anio}>{anio}</option>))}
                         </select>
                     </div>
                 </div>

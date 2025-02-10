@@ -6,9 +6,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faPrint, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "react-bootstrap";
 import PuntoDeVenta from "./PuntoDeVenta";
+import { printTicket } from '../funciones/printer';
+
 
 const InventarioSalida = () => {
-    const [ventas, setVentas] = useState([]);
+    const [ventas, setVentas] = useState(['o','l']);
     const [ventasOrigin, setVentasOrigin] = useState([]);
 
     const [expandedRows, setExpandedRows] = useState({});
@@ -18,7 +20,7 @@ const InventarioSalida = () => {
     const [mesActual, setMesActual] = useState('');
     const [anioActual, setAnioActual] = useState(new Date().getFullYear());
 
-    const [categoria, setCategoria] = useState('');
+    const [categoria, setCategoria] = useState('none');
     const [valorCategoria, setValorCategoria] = useState('');
 
     const meses = [
@@ -45,7 +47,7 @@ const InventarioSalida = () => {
     }, [mesActual, anioActual]);
 
     useEffect(() => {
-        if (valorCategoria.trim() === '') {
+        if (categoria === 'none') {
             setVentas(ventasOrigin);
         } else {
             const ventasFiltradas = ventasOrigin.filter(venta => {
@@ -76,10 +78,10 @@ const InventarioSalida = () => {
                     const fechaCompraAjustada = new Date(fechaCompra.getTime() + (fechaCompra.getTimezoneOffset() * 60000));
                     
                     const mesCompra = fechaCompraAjustada.toLocaleString('default', { month: 'long' });
-                    const anioCompra = fechaCompraAjustada.getFullYear();
+                    const anioCompra = fechaCompraAjustada.getFullYear();                    
                     return mesCompra.toLowerCase() === mesActual.toLowerCase() && anioCompra === anioActual;
                 })
-                .sort((a, b) => b.noNota - a.noNota);
+                .sort((a, b) => b.noNota - a.noNota);                           
             setVentas(productsList);
             setVentasOrigin(productsList);
         } catch (error) {
@@ -102,9 +104,11 @@ const InventarioSalida = () => {
         }
     }
 
-    function handlePrint() {
-
-    }
+    const handlePrint = async (venta) => {
+        printTicket(venta);
+    };
+    
+    
 
     const handleClose = () => {
         setShow(false);
@@ -131,9 +135,9 @@ const InventarioSalida = () => {
                             <select
                                 className="form-select"
                                 value={anioActual}
-                                onChange={(e) => setAnioActual(e.target.value)}
+                                onChange={(e) => setAnioActual(Number(e.target.value))}
                             >
-                                {[anioActual - 3, anioActual - 2, anioActual - 1, anioActual].map((anio) => (<option key={anio} value={anio}>{anio}</option>))}
+                                {[new Date().getFullYear() - 3, new Date().getFullYear() - 2, new Date().getFullYear() - 1, new Date().getFullYear()].map((anio) => (<option key={anio} value={anio}>{anio}</option>))}
                             </select>
                         </div>
 
@@ -143,7 +147,7 @@ const InventarioSalida = () => {
                                 value={categoria}
                                 onChange={(e) => setCategoria(e.target.value)}
                             >
-                                <option value=''>Categorias</option>
+                                <option value='none'>Categorias</option>
                                 <option value='fechaCompra'>Fecha de Compra</option>
                                 <option value='noNota'>Número de Nota</option>
                                 <option value='nombreCliente'>Nombre del Cliente</option>
@@ -202,7 +206,7 @@ const InventarioSalida = () => {
                                                     <FontAwesomeIcon icon={faTrash} />
                                                 </button>
                                                 <span>  </span>
-                                                <button className="btn btn-secondary ml-5" onClick={() => handlePrint()}>
+                                                <button className="btn btn-secondary ml-5" onClick={() => handlePrint(ticket)}>
                                                     <FontAwesomeIcon icon={faPrint} />
                                                 </button>
                                             </td>

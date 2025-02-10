@@ -26,7 +26,8 @@ const PuntoDeVenta = ({venta, isEditing}) => {
         };
 
         obtenerNoNota();
-    }, [noNota]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     
     const [total, setTotal] = useState(venta?.total || 0);
     const [totalOrigin, setTotalOrigin] = useState(venta? (venta.impuestos===true? (venta.total-venta.dineroImpuestos): venta.total): 0);
@@ -44,8 +45,13 @@ const PuntoDeVenta = ({venta, isEditing}) => {
     const [proveedor, setProveedor] = useState(venta?.proveedor || "Fernanda");
 
     const [fechaCompraCheck, setFechaCompraCheck] = useState(venta?.fechaCompraCheck || false);
-    const [fechaCompra, setFechaCompra] = useState(venta?.fechaCompra || new Date().toISOString().slice(0, 10));
-
+    const [fechaCompra, setFechaCompra] = useState(
+        venta?.fechaCompra 
+            ? venta.fechaCompra
+            : new Date().toLocaleDateString('en-CA')
+    );
+    
+    
     const [tipoPago, setTipoPago] = useState(venta?.tipoPago || '');
 
 
@@ -57,7 +63,11 @@ const PuntoDeVenta = ({venta, isEditing}) => {
             setMontoEnvio("");
         }
         if (!proveedorCheck) setProveedor("Fernanda");
-        if (!fechaCompraCheck) setFechaCompra(new Date().toISOString().slice(0, 10));
+        if (!fechaCompraCheck) {
+            const fechaLocal = new Date().toLocaleDateString('en-CA'); 
+            setFechaCompra(fechaLocal);
+        }
+        
         if (!impuestos){ 
             setPorcentajeImpuestos(16);
             setDineroImpuestos(0)
@@ -125,7 +135,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                         updatedProducto.codigosQR = newCodigosQR;
                     } else {
                         updatedProducto[name] = value;
-                    }
+                    } 
 
                     if (name === "nombre") {
                         const selectedOption = productosData.find(
@@ -229,6 +239,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                 updateDoc(doc(db, 'note', 'qarRrDpf4P2jg3r6rYQX'), { num: parseFloat(noNota) + 1 });
                 setNoNota(noNota + 1);
                 alert("Venta agregada exitosamente");
+                
             }
         } catch (error) {
             console.error("Error al guardar la venta: ", error);
@@ -391,9 +402,9 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                                     type="radio"
                                     id="pagoEfectivo"
                                     name="tipoPago"
-                                    value="efectivo"
+                                    value="Efectivo"
                                     className="form-check-input"
-                                    checked={tipoPago === 'efectivo'}
+                                    checked={tipoPago === 'Efectivo'}
                                     onChange={(e) => setTipoPago(e.target.value)}
                                 />
                                 <label htmlFor="pagoEfectivo" className="form-check-label">Efectivo</label>
@@ -404,9 +415,9 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                                     type="radio"
                                     id="pagoTarjeta"
                                     name="tipoPago"
-                                    value="tarjeta"
+                                    value="Tarjeta"
                                     className="form-check-input"
-                                    checked={tipoPago === 'tarjeta'}
+                                    checked={tipoPago === 'Tarjeta'}
                                     onChange={(e) => setTipoPago(e.target.value)}
                                 />
                                 <label htmlFor="pagoTarjeta" className="form-check-label">Tarjeta</label>
@@ -417,9 +428,9 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                                     type="radio"
                                     id="pagoTransferencia"
                                     name="tipoPago"
-                                    value="transferencia"
+                                    value="Transferencia"
                                     className="form-check-input"
-                                    checked={tipoPago === 'transferencia'}
+                                    checked={tipoPago === 'Transferencia'}
                                     onChange={(e) => setTipoPago(e.target.value)}
                                 />
                                 <label htmlFor="pagoTransferencia" className="form-check-label">Transferencia</label>

@@ -57,7 +57,7 @@ const InventarioEntrada = () => {
           const fechaEntrada = new Date(doc.fechaEntrada);
           const mesEntrada = fechaEntrada.toLocaleString('default', { month: 'long' });
           const anioEntrada = fechaEntrada.getFullYear();
-          return mesEntrada.toLowerCase() === mesActual.toLowerCase() && anioEntrada === anioActual;
+          return mesEntrada.toLowerCase() === mesActual.toLowerCase() && anioEntrada === Number(anioActual);
         })
         .sort((a, b) => b.noNota - a.noNota);
       setProductos(productsList);
@@ -117,7 +117,7 @@ const InventarioEntrada = () => {
                 value={anioActual}
                 onChange={(e) => setAnioActual(e.target.value)}
               >
-                {[anioActual - 3, anioActual - 2, anioActual - 1, anioActual].map((anio) => (<option key={anio} value={anio}>{anio}</option>))}
+                {[new Date().getFullYear() - 3, new Date().getFullYear() - 2, new Date().getFullYear() - 1, new Date().getFullYear()].map((anio) => (<option key={anio} value={anio}>{anio}</option>))}
               </select>
             </div>
 

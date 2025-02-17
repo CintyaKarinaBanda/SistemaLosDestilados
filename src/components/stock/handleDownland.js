@@ -124,13 +124,7 @@ const drawFooter = (ctx, whatsappIcon, instagramIcon, margin, canvasHeight) => {
   const instagramY = whatsappY;
 
   // Dibuja los íconos
-  ctx.drawImage(
-    whatsappIcon,
-    whatsappX,
-    whatsappY,
-    iconWidth + 25,
-    iconHeight + 5
-  );
+  ctx.drawImage(whatsappIcon, whatsappX, whatsappY, iconWidth, iconHeight );
   ctx.drawImage(instagramIcon, instagramX, instagramY, iconWidth, iconHeight);
 
   // Agrega los textos al lado de los íconos

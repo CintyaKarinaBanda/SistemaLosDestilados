@@ -1,12 +1,13 @@
 body {
     position: relative;
-    background-image: url('/assets/images/fondo.png');
+    background: url('/public/images/fondo.jpg') no-repeat center center fixed;
     background-size: cover;
-    background-position: center; 
-    background-repeat: no-repeat; 
-    min-height: 100vh; 
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
 }
 
+/* Capa de color para rellenar la pantalla y oscurecer el fondo */
 body::before {
     content: '';
     position: absolute;
@@ -14,12 +15,11 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.3);
     z-index: 1;
-    pointer-events: none; 
 }
 
+/* Asegura que el contenido esté encima de la capa de color */
 body * {
     position: relative;
-    z-index: 2; 
+    z-index: 2;
 }

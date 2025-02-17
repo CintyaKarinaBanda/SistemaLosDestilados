@@ -11,12 +11,14 @@ import Corte from './components/corte/Corte';
 import Login from './components/Login'; 
 import Gastos from './components/gastos/Gastos';
 import { useAuth, AuthProvider } from './components/AuthContext';
+import Graficas from './components/estadisticas/Graficas';
+import Corizaciones from './components/cotizaciones/Cotizaciones';
+import Stock from './components/stock/Stock';
 
 function App() {
     const { auth } = useAuth();
 
     if (auth === null) {
-        // Mientras estamos verificando la autenticación, podrías mostrar un loader o nada
         return <div>Loading...</div>;
     }
 
@@ -33,6 +35,9 @@ function App() {
                     <Route path="/Productos" element={auth ? <Productos /> : <Navigate to="/Login" />} />
                     <Route path="/Corte" element={auth ? <Corte /> : <Navigate to="/Login" />} />
                     <Route path="/Gastos" element={auth ? <Gastos /> : <Navigate to="/Login" />} />
+                    <Route path="/Graficas" element={auth ? <Graficas /> : <Navigate to="/Login" />} />
+                    <Route path="/Cotizaciones" element={auth ? <Corizaciones /> : <Navigate to="/Login" />} />
+                    <Route path="/Stock" element={auth ? <Stock /> : <Navigate to="/Login" />} />
                 </Routes>
             </div>
         </Router>

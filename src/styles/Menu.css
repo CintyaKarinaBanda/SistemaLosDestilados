@@ -1,16 +1,16 @@
 .custom-navbar {
-    background-color: #113d02 !important; 
-    color: white !important; 
+    background-color: #9abca8   !important; 
+    color:#F8F1E4   !important; 
 }
 
 .custom-navbar .navbar-brand,
 .custom-navbar .nav-link,
 .custom-navbar .navbar-toggler-icon {
-    color: white !important; 
+    color: #1C1C1C      !important; 
 }
 
 .custom-navbar .nav-link {
-    color: white !important; 
+    color: 2B2B2B  !important; 
 }
 
 .custom-navbar {

@@ -83,28 +83,32 @@ const Graficas = () => {
   const updateTablas = () => {
     const clientesData = {};
     const productosData = {};
-
+  
     datos.forEach((venta) => {
       const fechaCompra = new Date(venta.fechaCompra);
       const mes = fechaCompra.getMonth();
       const anio = fechaCompra.getFullYear();
       const nombreCliente = venta.nombreCliente;
-      const productos = venta.productos.map((producto) => producto.nombre);
-
+      const productos = venta.productos;
+  
       if (nombreCliente === "NA" || anio !== anioActualTablas) return;
-
+  
+      // Actualizar datos de clientes
       if (!clientesData[nombreCliente]) clientesData[nombreCliente] = {};
-      if (!productosData[nombreCliente]) productosData[nombreCliente] = {};
-
       clientesData[nombreCliente][meses[mes]] = (clientesData[nombreCliente][meses[mes]] || 0) + 1;
+  
+      // Actualizar datos de productos
       productos.forEach((producto) => {
-        productosData[producto] = (productosData[producto] || 0) + 1;
+        if (!productosData[producto.nombre]) {
+          productosData[producto.nombre] = {};
+        }
+        productosData[producto.nombre][meses[mes]] = (productosData[producto.nombre][meses[mes]] || 0) + 1;
       });
     });
-
+  
     setClientesPorMes(clientesData);
     setProductosPorMes(productosData);
-  };
+  };  
 
   useEffect(() => {
     updateTablas();
@@ -239,17 +243,21 @@ const Graficas = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(productosPorMes).map(([producto, cantidad]) => (
+                    {Object.entries(productosPorMes).map(([producto, comprasPorMes]) => (
                       <tr key={producto}>
                         <td>{producto}</td>
-                        {meses.map((mes) => <td key={mes}>{cantidad || 0}</td>)}
-                        <td>{cantidad}</td>
+                        {meses.map((mes) => {
+                          const cantidad = comprasPorMes[mes] || 0; // Accede al valor de cada mes
+                          return <td key={mes}>{cantidad === 0 ? '-' : cantidad}</td>; // Muestra el valor o "-" si es 0
+                        })}
+                        <td>{Object.values(comprasPorMes).reduce((acc, val) => acc + val, 0)}</td> {/* Total */}
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             )}
+
           </div>
         </div>
       </div>

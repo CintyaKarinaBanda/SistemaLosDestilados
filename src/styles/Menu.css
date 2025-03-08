@@ -1,6 +1,6 @@
 .custom-navbar {
     background-color: #9abca8   !important; 
-    color:#F8F1E4   !important; 
+    color:#1C1C1C   !important; 
 }
 
 .custom-navbar .navbar-brand,
@@ -10,7 +10,7 @@
 }
 
 .custom-navbar .nav-link {
-    color: 2B2B2B  !important; 
+    color: #1C1C1C  !important; 
 }
 
 .custom-navbar {
@@ -19,12 +19,12 @@
     left: 0;
     width: 100%;
     z-index: 1000; 
-    background-color: white; 
+    background-color: #1C1C1C; 
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
 }
 
 .custom-navbar .navbar-toggler {
-    border-color: white;
+    border-color: 1C1C1C;
 }
 
 .custom-navbar .navbar-toggler-icon {

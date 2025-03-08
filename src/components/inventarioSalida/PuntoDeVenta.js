@@ -16,7 +16,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                     if (infoNota.year.toString() === new Date().getFullYear().toString()) {
                         setNoNota(infoNota.num);
                     } else {
-                        await updateDoc(doc(db, 'note', 'qarRrDpf4P2jg3r6rYQX'), { num: 1 });
+                        await updateDoc(doc(db, 'note', 'qarRrDpf4P2jg3r6rYQX'), { num: 1, year: new Date().getFullYear().toString() }); 
                         setNoNota(1);
                     }
                 } catch (err) {
@@ -84,7 +84,9 @@ const PuntoDeVenta = ({venta, isEditing}) => {
         const fetchData = async () => {
             try {
                 const querySnapshot = await getDocs(collection(db, 'products'));
-                const productsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const productsList = querySnapshot.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
                 setProductosData(productsList);                
             } catch (error) {
                 console.error("Error fetching documents: ", error);

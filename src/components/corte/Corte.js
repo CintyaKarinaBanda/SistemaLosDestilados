@@ -52,11 +52,11 @@ const Corte = () => {
                         });
                     });
     
-                setTotal(parseFloat(total.toFixed(2)));
-                setGanancias(parseFloat(ganancias.toFixed(2)));
-                setNegocio(parseFloat(negocio.toFixed(2)));
-                setSujetos(parseFloat(sujetos.toFixed(2)));
-                setCostos(parseFloat(costos.toFixed(2)));
+                setTotal(total.toFixed(2));
+                setGanancias(ganancias.toFixed(2));
+                setNegocio(negocio.toFixed(2));
+                setSujetos(sujetos.toFixed(2));
+                setCostos(costos.toFixed(2));
 
                 const querySnapshotBills = await getDocs(collection(db, 'bills'));
                 querySnapshotBills.docs
@@ -71,7 +71,7 @@ const Corte = () => {
                     .forEach(({ monto }) => {
                         sumaGastos += parseFloat(monto);
                     });
-                setGastos(sumaGastos);
+                setGastos(sumaGastos.toFixed(2));
     
             } catch (error) {
                 console.error("Error fetching documents: ", error);

@@ -12,10 +12,10 @@ export const handleDownload = async (productos) => {
   const tableWidth = 900;
   const canvasWidth = tableWidth + 2 * margin;
   let contentHeight =
-    200 +
+    50 +
     Object.keys(productosPorCategoria).length * 50 +
     productos.length * 40;
-  const canvasHeight = contentHeight + 2 * margin + 200;
+  const canvasHeight = contentHeight + 2 * margin + 150;
 
   const canvas = document.createElement("canvas");
   canvas.width = canvasWidth;
@@ -39,7 +39,7 @@ export const handleDownload = async (productos) => {
   ]).then(() => {
     drawBackground(ctx, fondo, canvasWidth, canvasHeight);
     drawHeader(ctx, logo, canvasWidth, margin);
-    drawTable(ctx, productosPorCategoria, margin, canvasWidth);
+    drawTable(ctx, productosPorCategoria, margin, canvasWidth, contentHeight);
     drawFooter(ctx, whatsappIcon, instagramIcon, margin, canvasHeight);
 
     const imgData = canvas.toDataURL("image/png");
@@ -63,14 +63,14 @@ const drawHeader = (ctx, logo, canvasWidth, margin) => {
   ctx.drawImage(logo, canvasWidth / 2 + 70, margin - 30, 180, 180);
 };
 
-const drawTable = (ctx, productosPorCategoria, margin, canvasWidth) => {
+const drawTable = (ctx, productosPorCategoria, margin, canvasWidth, contentHeight) => {
   let y = margin + 130;
   const colPositions = [
     margin, // Destilado (izquierda)
-    margin + 335, // Piezas (centrado)
-    margin + 450, // Mililitros (centrado)
-    margin + 600, // Precio x Caja (centrado)
-    margin + 785, // Precio x Botella (centrado)
+    margin + 390, // Piezas (centrado)
+    margin + 500, // Mililitros (centrado)
+    margin + 650, // Precio x Caja (centrado)
+    margin + 835, // Precio x Botella (centrado)
   ];
 
   Object.keys(productosPorCategoria).forEach((categoria) => {
@@ -108,7 +108,7 @@ const drawTable = (ctx, productosPorCategoria, margin, canvasWidth) => {
   ctx.fillText(
     "PRECIOS SUJETOS A CAMBIOS SIN PREVIO AVISO",
     canvasWidth / 2,
-    530
+    contentHeight + 100
   );
 };
 

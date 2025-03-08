@@ -151,7 +151,7 @@ const ProductoModal = ({ show, handleClose, product, isEditing }) => {
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="primary" onClick={saveProduct}>
-                    {isEditing ? 'Actualizar' : 'Guardad'}
+                    {isEditing ? 'Actualizar' : 'Guardar'}
                 </Button>
             </Modal.Footer>
         </Modal>

@@ -16,7 +16,9 @@ const Productos = () => {
   const fetchData = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, 'products'));
-      const productsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const productsList = querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => a.name.localeCompare(b.name));
       setProductos(productsList);
     } catch (error) {
       console.error("Error fetching documents: ", error);

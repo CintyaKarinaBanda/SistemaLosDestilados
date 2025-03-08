@@ -21,7 +21,11 @@ const Stock = () => {
         id: doc.id,
         ...doc.data(),
       }));
-      productsList.sort((a, b) => a.name.localeCompare(b.name));
+      productsList.sort((a, b) => {
+        if (a.category !== b.category) return a.category.localeCompare(b.category);
+        return a.name.localeCompare(b.name);
+      });
+                 
       setStock(productsList);
     } catch (error) {
       console.error("Error fetching documents: ", error);

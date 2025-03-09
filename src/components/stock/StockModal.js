@@ -138,7 +138,7 @@ const StockModal = ({ show, handleClose, product, isEditing }) => {
                         className="form-control"
                         id="productCategory"
                         value={productCategory}
-                        placeholder="Nombre del Destilado"
+                        placeholder="Categoria"
                         onChange={(e) => setProductCategory(e.target.value)}
                     />
                     {errors.productName && <div className="text-danger">{errors.productName}</div>}

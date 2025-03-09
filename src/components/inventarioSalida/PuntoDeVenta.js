@@ -194,24 +194,22 @@ const PuntoDeVenta = ({venta, isEditing}) => {
         const ventaRegistro = {
             noNota: noNota,
             nombreCliente: nombreCliente,
-            
             fechaCompra: fechaCompra,
             proveedor: proveedor,
             total: total,
             envio: montoEnvio,
             productos: productos,
             tipoPago: tipoPago,
-
             fechaCompraCheck: true,
             proveedorCheck: true,
         };
     
-        if (impuestos){ 
+        if (impuestos) { 
             ventaRegistro.impuestos = impuestos;
             ventaRegistro.porcentajeImpuestos = porcentajeImpuestos;
             ventaRegistro.dineroImpuestos = dineroImpuestos;
         }
-        if (envio){ 
+        if (envio) { 
             ventaRegistro.envio = envio;
             ventaRegistro.montoEnvio = montoEnvio;
         }
@@ -221,33 +219,44 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                 const productSnapshot = await getDoc(doc(db, 'sales', venta.id));
                 if (productSnapshot.exists()) {
                     const currentData = productSnapshot.data();
-
                     const camposParaEliminar = {};
                     Object.keys(currentData).forEach((key) => {
-                    if (!(key in ventaRegistro)) {
-                        camposParaEliminar[key] = deleteField();
-                    }
+                        if (!(key in ventaRegistro)) {
+                            camposParaEliminar[key] = deleteField();
+                        }
                     });
-
+    
                     await updateDoc(doc(db, 'sales', venta.id), {
-                    ...ventaRegistro,
-                    ...camposParaEliminar,
+                        ...ventaRegistro,
+                        ...camposParaEliminar,
                     });
-
+    
                     alert("Venta actualizada exitosamente");
                 }
             } else {
                 await addDoc(collection(db, 'sales'), ventaRegistro);
                 updateDoc(doc(db, 'note', 'qarRrDpf4P2jg3r6rYQX'), { num: parseFloat(noNota) + 1 });
-                setNoNota(noNota + 1);
+                setNoNota(Number(noNota) + 1);
                 alert("Venta agregada exitosamente");
-                
+    
+                setProductos([]);
+                setTotal(0);
+                setTotalOrigin(0);
+                setnombreCliente('');
+                setImpuestos(false);
+                setPorcentajeImpuestos(0);
+                setDineroImpuestos(0);
+                setEnvio(false);
+                setMontoEnvio(0);
+                setTipoPago('');
+                setFechaCompra(new Date().toLocaleDateString('en-CA'));
             }
         } catch (error) {
             console.error("Error al guardar la venta: ", error);
             alert("Hubo un error al agregar la venta");
         }
     };
+    
     
     return (
         <div className="container mb-5">

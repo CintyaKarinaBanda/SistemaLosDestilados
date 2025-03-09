@@ -19,7 +19,9 @@ const Graficas = () => {
   const [ventasAnuales, setVentasAnuales] = useState([]);
   const [clientesPorMes, setClientesPorMes] = useState({});
   const [productosPorMes, setProductosPorMes] = useState({});
-  const [tablaSeleccionada, setTablaSeleccionada] = useState('clientes');
+  const [tablaSeleccionada, setTablaSeleccionada] = useState('clientes')
+  
+  const [filtro, setFiltro] = useState('');
 
   const meses = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
@@ -187,25 +189,58 @@ const Graficas = () => {
           <div className="card-header d-flex justify-content-between align-items-center">
             <h1 className="fw-bold ms-2">Recuento</h1>
           </div>
-          <div className="card-body row">
-            <div className="mb-3 col-12 col-md-3">
-              <label htmlFor="anioSelect" className="form-label">Selecciona el año</label>
-              <select id="anioSelect" className="form-select" value={anioActualTablas} onChange={(e) => setAnioActualTablas(Number(e.target.value))}>
-                {[new Date().getFullYear() - 1, new Date().getFullYear()].map((anio) => (
-                  <option key={anio} value={anio}>{anio}</option>
-                ))}
-              </select>
-            </div>
+          <div className="card-body">
+          <div className="row align-items-end mb-3">
+  {/* Selección de Año */}
+  <div className="col-12 col-md-3">
+    <label htmlFor="anioSelect" className="form-label">Selecciona el año</label>
+    <select
+      id="anioSelect"
+      className="form-select"
+      value={anioActualTablas}
+      onChange={(e) => setAnioActualTablas(Number(e.target.value))}
+    >
+      {[new Date().getFullYear() - 1, new Date().getFullYear()].map((anio) => (
+        <option key={anio} value={anio}>
+          {anio}
+        </option>
+      ))}
+    </select>
+  </div>
 
-            <div className="mb-3">
-              <button className={`btn ${tablaSeleccionada === 'clientes' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setTablaSeleccionada('clientes')}>
-                Recuento por Cliente
-              </button>
-              <button className={`btn ${tablaSeleccionada === 'productos' ? 'btn-primary' : 'btn-outline-primary'} ms-2`} onClick={() => setTablaSeleccionada('productos')}>
-                Recuento por Producto
-              </button>
-            </div>
+  {/* Espacio adicional entre columnas */}
+  <div className="col-md-1 d-none d-md-block"></div>
 
+
+  <div className="col-12 col-md-5 d-flex gap-2">
+    <button
+      className={`btn ${tablaSeleccionada === 'clientes' ? 'btn-primary' : 'btn-outline-primary'}`}
+      onClick={() => setTablaSeleccionada('clientes')}
+    >
+      Recuento por Cliente
+    </button>
+    <button
+      className={`btn ${tablaSeleccionada === 'productos' ? 'btn-primary' : 'btn-outline-primary'}`}
+      onClick={() => setTablaSeleccionada('productos')}
+    >
+      Recuento por Producto
+    </button>
+  </div>
+
+  <div className="col-12 col-md-3">
+    <label htmlFor="filtroInput" className="form-label">Buscar</label>
+    <input
+      id="filtroInput"
+      type="text"
+      className="form-control"
+      placeholder="Escribe aquí..."
+      value={filtro}
+      onChange={(e) => setFiltro(e.target.value)}
+    />
+  </div>
+</div>
+
+          
             {tablaSeleccionada === 'clientes' && (
               <div className="table-responsive mt-4">
                 <table className="table table-striped table-hover">
@@ -217,16 +252,23 @@ const Graficas = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(clientesPorMes).map(([cliente, comprasPorMes]) => (
-                      <tr key={cliente}>
-                        <td>{cliente}</td>
-                        {meses.map((mes) => {
-                          const cantidad = comprasPorMes[mes] || 0;
-                          return <td key={mes}>{cantidad === 0 ? '-' : cantidad}</td>;
-                        })}
-                        <td>{Object.values(comprasPorMes).reduce((acc, val) => acc + val, 0)}</td>
-                      </tr>
-                    ))}
+                    {Object.entries(clientesPorMes)
+                      .filter(([producto]) => producto.toLowerCase().includes(filtro.toLowerCase())) 
+                      .sort(([, comprasA], [, comprasB]) => {
+                        const totalA = Object.values(comprasA).reduce((acc, val) => acc + val, 0);
+                        const totalB = Object.values(comprasB).reduce((acc, val) => acc + val, 0);
+                        return totalB - totalA; 
+                      })
+                      .map(([cliente, comprasPorMes]) => (
+                        <tr key={cliente}>
+                          <td>{cliente}</td>
+                          {meses.map((mes) => {
+                            const cantidad = comprasPorMes[mes] || 0;
+                            return <td key={mes}>{cantidad === 0 ? '-' : cantidad}</td>;
+                          })}
+                          <td>{Object.values(comprasPorMes).reduce((acc, val) => acc + val, 0)}</td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
@@ -243,21 +285,26 @@ const Graficas = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(productosPorMes).map(([producto, comprasPorMes]) => (
-                      <tr key={producto}>
-                        <td>{producto}</td>
-                        {meses.map((mes) => {
-                          const cantidad = comprasPorMes[mes] || 0; // Accede al valor de cada mes
-                          return <td key={mes}>{cantidad === 0 ? '-' : cantidad}</td>; // Muestra el valor o "-" si es 0
-                        })}
-                        <td>{Object.values(comprasPorMes).reduce((acc, val) => acc + val, 0)}</td> {/* Total */}
-                      </tr>
-                    ))}
+                    {Object.entries(productosPorMes)
+                      .sort(([, comprasA], [, comprasB]) => {
+                        const totalA = Object.values(comprasA).reduce((acc, val) => acc + val, 0);
+                        const totalB = Object.values(comprasB).reduce((acc, val) => acc + val, 0);
+                        return totalB - totalA; 
+                      })
+                      .map(([producto, comprasPorMes]) => (
+                        <tr key={producto}>
+                          <td>{producto}</td>
+                          {meses.map((mes) => {
+                            const cantidad = comprasPorMes[mes] || 0; 
+                            return <td key={mes}>{cantidad === 0 ? '-' : cantidad}</td>;
+                          })}
+                          <td>{Object.values(comprasPorMes).reduce((acc, val) => acc + val, 0)}</td> {/* Total */}
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
             )}
-
           </div>
         </div>
       </div>

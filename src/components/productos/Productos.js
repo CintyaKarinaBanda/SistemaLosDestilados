@@ -68,7 +68,7 @@ const Productos = () => {
                   <th>Destilado</th>
                   <th>Precio</th>
                   <th>Costo</th>
-                  <th>Ganancia</th>
+                  <th>Utilidad Total</th>
                   <th>Editar / Borrar</th>
                 </tr>
               </thead>
@@ -76,9 +76,9 @@ const Productos = () => {
                 {productos.map((producto) => (
                   <tr key={producto.id}>
                     <td>{producto.name}</td>
-                    <td>{producto.price}</td>
-                    <td>{producto.cost}</td>
-                    <td>{producto.profit}</td>
+                    <td>$ {producto.price}</td>
+                    <td>$ {producto.cost}</td>
+                    <td>$ {producto.profit}</td>
                     <td>
                       <button className="btn btn-secondary" onClick={() => handleShow(producto, true)}>
                         <FontAwesomeIcon icon={faEdit} />

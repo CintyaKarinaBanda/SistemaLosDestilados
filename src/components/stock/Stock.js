@@ -95,8 +95,8 @@ const Stock = () => {
                     <td>{producto.name}</td>
                     <td className="text-center">{producto.piece}</td>
                     <td className="text-center">{producto.mililiters}</td>
-                    <td className="text-center">{producto.byBox}</td>
-                    <td className="text-center">{producto.byBottle}</td>
+                    <td className="text-center">$ {producto.byBox}</td>
+                    <td className="text-center">$ {producto.byBottle}</td>
                     <td className="text-center">{producto.category}</td>
                     <td>
                       <button

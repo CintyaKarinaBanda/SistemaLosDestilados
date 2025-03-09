@@ -81,7 +81,7 @@ const InventarioSalida = () => {
                     const anioCompra = fechaCompraAjustada.getFullYear();                    
                     return mesCompra.toLowerCase() === mesActual.toLowerCase() && anioCompra === anioActual;
                 })
-                .sort((a, b) => b.noNota - a.noNota);                           
+                .sort((a, b) => b.noNota - a.noNota);                                           
             setVentas(productsList);
             setVentasOrigin(productsList);
         } catch (error) {

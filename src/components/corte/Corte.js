@@ -33,25 +33,29 @@ const Corte = () => {
     
                 let total = 0, ganancias = 0, negocio = 0, sujetos = 0, costos = 0, sumaGastos = 0;
     
+                const mesesMap = {
+                    enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+                    julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
+                  };
                 querySnapshotCorte.docs
                     .map(doc => doc.data())
                     .filter(({ fechaCompra }) => {
-                        const fecha = new Date(fechaCompra);
-                        return (
-                            fecha.toLocaleString('default', { month: 'long' }).toLowerCase() === mesActual.toLowerCase() &&
-                            fecha.getFullYear() === Number(anioActual)
-                        );
+                        const fecha = new Date(fechaCompra + 'T00:00:00Z'); 
+                        const mesFecha = fecha.getUTCMonth(); 
+                        const anioFecha = fecha.getUTCFullYear(); 
+                        const mesActualNum = mesesMap[mesActual.toLowerCase()];
+                        return anioFecha === Number(anioActual) && mesFecha === mesActualNum;
                     })
                     .forEach(({ total: saleTotal, productos }) => {
                         total += saleTotal;
-                        productos.forEach(({ ganancia, negocio: prodNegocio, sujetos: prodSujetos, costo, cantidad}) => {
-                            ganancias += parseFloat(ganancia) * parseFloat(cantidad);
-                            negocio += parseFloat(prodNegocio) * parseFloat(cantidad);
-                            sujetos += parseFloat(prodSujetos) * parseFloat(cantidad);
-                            costos += parseFloat(costo) * parseFloat(cantidad);
+                        productos.forEach(({ ganancia, negocio: prodNegocio, sujetos: prodSujetos, costo, cantidad }) => {
+                        ganancias += parseFloat(ganancia) * parseFloat(cantidad);
+                        negocio += parseFloat(prodNegocio) * parseFloat(cantidad);
+                        sujetos += parseFloat(prodSujetos) * parseFloat(cantidad);
+                        costos += parseFloat(costo) * parseFloat(cantidad);
                         });
                     });
-    
+
                 setTotal(total.toFixed(2));
                 setGanancias(ganancias.toFixed(2));
                 setNegocio(negocio.toFixed(2));
@@ -112,9 +116,9 @@ const Corte = () => {
                         <table className="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Utilidad</th>
-                                    <th>Costos</th>
                                     <th>Ingresos</th>
+                                    <th>Costos</th>
+                                    <th>Utilidad Total</th>
                                     <th>Utilidad Negocio</th>
                                     <th>Utilidad Sujetos</th>
                                 </tr>

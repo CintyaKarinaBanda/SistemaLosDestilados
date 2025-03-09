@@ -4,6 +4,7 @@ import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc } from 'firebase
 import db from '../../database/credentials';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import GastoModal from './GastoModal';
 
 const Gastos = () => {
     const [gastos, setGastos] = useState([]);
@@ -21,6 +22,9 @@ const Gastos = () => {
         'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
         'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
+
+    const [show, setShow] = useState(false);
+    const [conceptos, setConceptos] = useState([]);
 
     useEffect(() => {
         const fechaActual = new Date();
@@ -42,6 +46,8 @@ const Gastos = () => {
                 });
             
             setGastos(billsList);
+            const snapshot = await getDocs(collection(db, 'fixedCosts'));
+            setConceptos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         } catch (error) {
             console.error("Error fetching documents: ", error);
         }
@@ -97,11 +103,23 @@ const Gastos = () => {
         }
     };
 
+    const handleShow = () => {
+        setShow(true);
+      };
+    
+      const handleClose = () => {
+        setShow(false);
+        fetchData();
+      };
+
     return (
         <div className="container mb-5">
             <div className="card">
                 <div className="card-header d-flex justify-content-between align-items-center">
-                    <h1 className="fw-bold">Gastos</h1>
+                    <h1 className="fw-bold">Gastos de operación</h1>
+                    <button className="btn btn-primary" onClick={() => handleShow(null, false)}>
+                        Alta de gastos
+                    </button>
                 </div>
                 <div className="card-body">
                     <div className="row">
@@ -110,17 +128,28 @@ const Gastos = () => {
                                 <h4 className="fw-bold text-center">{isEditing ? 'Editar' : 'Agregar'}</h4>
                             </div>
                             <div className="row mb-3">
-                                <div className="col-md-6 mb-2 mb-md-0">
-                                    <input
-                                        className="form-control"
-                                        type="text"
-                                        placeholder="Concepto"
-                                        value={concepto}
-                                        onInput={(e) => setConcepto(e.target.value.toUpperCase())}
-                                        required
-                                        autoFocus
+                            <div className="col-md-6 mb-2 mb-md-0">
+                                <input
+                                    id="conceptoInput"
+                                    className="form-control"
+                                    type="text"
+                                    placeholder="Concepto"
+                                    value={concepto}
+                                    onChange={(e) => setConcepto(e.target.value.toUpperCase())} 
+                                    required
+                                    autoFocus
+                                    list="conceptoList"  
+                                />
+                            </div>
+                            <datalist id="conceptoList"> 
+                                {conceptos.map((concepto, index) => (                                                                                         
+                                    <option 
+                                        key={index} 
+                                        value={concepto.concepto}
                                     />
-                                </div>
+                                ))}
+                            </datalist>
+
                                 <div className="col-md-6">
                                     <input
                                         className="form-control"
@@ -181,7 +210,7 @@ const Gastos = () => {
                                         {gastos.map((gasto) => (
                                             <tr key={gasto.id}>
                                                 <td>{gasto.concepto}</td>
-                                                <td>{gasto.monto}</td>
+                                                <td>$ {gasto.monto}</td>
                                                 <td>
                                                     <button className="btn btn-secondary me-2" onClick={() => handleEdit(gasto, true, gasto.id)}>
                                                         <FontAwesomeIcon icon={faEdit} />
@@ -199,8 +228,11 @@ const Gastos = () => {
                     </div>
                 </div>
             </div>
+            <GastoModal 
+                show={show} 
+                handleClose={handleClose}
+            />
         </div>
-
     );
 };
 

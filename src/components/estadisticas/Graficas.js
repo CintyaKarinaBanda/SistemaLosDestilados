@@ -11,9 +11,10 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 const Graficas = () => {
   const [anioActual, setAnioActual] = useState(new Date().getFullYear());
   const [anioActualTablas, setAnioActualTablas] = useState(new Date().getFullYear());
-  const [valor, setValor] = useState("ganancia");
-  const [valorAnual, setValorAnual] = useState("ganancia");
+  const [valor, setValor] = useState("ingresos");
+  const [valorAnual, setValorAnual] = useState("ingresos");
   const [datos, setDatos] = useState([]);
+  const [gastos, setGastos] = useState([]);
 
   const [ventas, setVentas] = useState([]);
   const [ventasAnuales, setVentasAnuales] = useState([]);
@@ -32,6 +33,9 @@ const Graficas = () => {
       try {
         const querySnapshot = await getDocs(collection(db, "sales"));
         setDatos(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+        const querySnapshotBills = await getDocs(collection(db, "bills"));
+        setGastos(querySnapshotBills.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (error) {
         console.error("Error fetching documents:", error);
       }
@@ -41,46 +45,77 @@ const Graficas = () => {
   }, []);
 
   const processSalesData = (year, valor) => {
-    const totalPorMes = datos.reduce((acc, doc) => {
-      if (new Date(doc.fechaCompra).getFullYear() !== year) return acc;
-
-      doc.productos.forEach((producto) => {
-        const totalVenta = parseFloat(producto[valor]);
-        if (isNaN(totalVenta)) return;
-
-        const mes = new Date(doc.fechaCompra).getMonth();
-        acc[mes] = (acc[mes] || 0) + totalVenta;
-      });
+    const sourceData = valor === 'gasto' ? gastos : datos;
+  
+    // Calcular el total por mes
+    const totalPorMes = sourceData.reduce((acc, doc) => {
+      // Determinar la fecha según el tipo de valor (gastos o ventas)
+      const fecha = valor === 'gasto' ? new Date(doc.fechaGasto + 'T00:00:00Z') : new Date(doc.fechaCompra + 'T00:00:00Z');
+      
+      // Verificar si la fecha es válida y si el año coincide
+      if (isNaN(fecha.getTime()) || fecha.getUTCFullYear() !== year) return acc;
+  
+      const mes = fecha.getUTCMonth();
+      if (!acc[mes]) acc[mes] = 0;
+  
+      
+      if (valor === 'gasto') {
+        console.log("Gastos: ", doc);
+        acc[mes] += parseFloat(doc.monto) || 0;
+      } else if(valor === 'ingresos') {
+        acc[mes] += parseFloat(doc.total) || 0;
+      } else {
+        doc.productos.forEach(({ cantidad, [valor]: valorProducto }) => {
+          const totalVenta = (parseFloat(cantidad) || 0) * (parseFloat(valorProducto) || 0);
+          if (totalVenta > 0) acc[mes] += totalVenta;
+        });
+      }
+  
       return acc;
     }, {});
-
+  
+    // Crear el arreglo con los resultados por mes
     return meses.map((mes, index) => ({
       mes,
       total: totalPorMes[index] || 0,
     }));
   };
+    
 
   useEffect(() => {
     setVentas(processSalesData(anioActual, valor));
   }, [datos, anioActual, valor]);
 
   useEffect(() => {
-    const totalPorAnio = datos.reduce((acc, doc) => {
-      doc.productos.forEach((producto) => {
-        const totalVenta = parseFloat(producto[valorAnual]);
-        if (isNaN(totalVenta)) return;
-
-        const anio = new Date(doc.fechaCompra).getFullYear();
+    const getTotalPorAnio = (sourceData) => sourceData.reduce((acc, doc) => {
+      const anio = new Date(doc.fechaGasto || doc.fechaCompra).getFullYear();
+      let totalVenta = 0;
+  
+      if (valorAnual === 'gasto') {
+        totalVenta = parseFloat(doc.monto) || 0;
+      } else if (valorAnual === 'ingresos') {
+        totalVenta = parseFloat(doc.total) || 0;
+      } else {
+        doc.productos.forEach((producto) => {
+          totalVenta += parseFloat(producto[valorAnual]) || 0;
+        });
+      }
+  
+      if (totalVenta > 0) {
         acc[anio] = (acc[anio] || 0) + totalVenta;
-      });
+      }
+  
       return acc;
     }, {});
-
+  
+    const totalPorAnio = valorAnual === 'gasto' ? getTotalPorAnio(gastos) : getTotalPorAnio(datos);
+  
     setVentasAnuales(Object.keys(totalPorAnio).map((anio) => ({
       anio: Number(anio),
       total: totalPorAnio[anio],
     })));
-  }, [datos, valorAnual]);
+  }, [datos, gastos, valorAnual]);
+  
 
   const updateTablas = () => {
     const clientesData = {};
@@ -154,11 +189,12 @@ const Graficas = () => {
                   ))}
                 </select>
                 <select className="form-select" value={valor} onChange={(e) => setValor(e.target.value)}>
-                  <option value="ganancia">Ganancias</option>
-                  <option value="negocio">Negocio</option>
-                  <option value="sujetos">Sujetos</option>
+                  <option value="ingresos">Ingresos</option>
+                  <option value="ganancia">Utilidad Total</option>
+                  <option value="negocio">Utilidad Negocio</option>
+                  <option value="sujetos">Utilidad Sujetos</option>
                   <option value="costo">Costos</option>
-                  <option value="precio">Gastos</option>
+                  <option value="gasto">Gastos</option>
                 </select>
               </div>
               <div style={{ height: "250px" }}>
@@ -169,11 +205,12 @@ const Graficas = () => {
             <div className="col-md-6">
               <div className="d-flex align-items-center gap-2">
                 <select className="form-select" value={valorAnual} onChange={(e) => setValorAnual(e.target.value)}>
-                  <option value="ganancia">Ganancias</option>
-                  <option value="negocio">Negocio</option>
-                  <option value="sujetos">Sujetos</option>
+                  <option value="ingresos">Ingresos</option>
+                  <option value="ganancia">Utilidad Total</option>
+                  <option value="negocio">Utilidad Negocio</option>
+                  <option value="sujetos">Utilidad Sujetos</option>
                   <option value="costo">Costos</option>
-                  <option value="precio">Gastos</option>
+                  <option value="gasto">Gastos</option>
                 </select>
               </div>
               <div style={{ height: "250px" }}>

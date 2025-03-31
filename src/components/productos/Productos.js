@@ -66,10 +66,12 @@ const Productos = () => {
               <thead>
                 <tr>
                   <th>Destilado</th>
-                  <th>Precio</th>
-                  <th>Costo</th>
-                  <th>Utilidad Total</th>
-                  <th>Editar / Borrar</th>
+                  <th style={{ width: '100px' }}>Precio</th>
+                  <th style={{ width: '100px' }}>Costo</th>
+                  <th style={{ width: '100px' }}>Utilidad Total</th>
+                  <th style={{ width: '100px' }}>Utilidad Negocio</th>
+                  <th style={{ width: '100px' }}>Utilidad Sujetos</th>
+                  <th style={{ width: '100px' }}>Editar / Borrar</th>
                 </tr>
               </thead>
               <tbody>
@@ -79,6 +81,8 @@ const Productos = () => {
                     <td>$ {producto.price}</td>
                     <td>$ {producto.cost}</td>
                     <td>$ {producto.profit}</td>
+                    <td>$ {producto.businessProfit}</td>
+                    <td>$ {producto.subjectProfit}</td>
                     <td>
                       <button className="btn btn-secondary" onClick={() => handleShow(producto, true)}>
                         <FontAwesomeIcon icon={faEdit} />

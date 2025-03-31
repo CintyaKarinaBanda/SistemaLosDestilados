@@ -86,7 +86,7 @@ const GatosModal = ({ show, handleClose }) => {
                                     <Button
                                         variant="secondary"
                                         onClick={() => handleEdit(concepto)}
-                                        className="me-2"  // Margen derecho para separar
+                                        className="me-2"
                                     >
                                         <FontAwesomeIcon icon={faEdit} />
                                     </Button>

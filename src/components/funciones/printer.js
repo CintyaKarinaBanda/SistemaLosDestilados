@@ -1,32 +1,88 @@
 import { createCanvas, loadImage } from 'canvas';
 import iconv from 'iconv-lite';
-import escposEncoder from 'esc-pos-encoder';
 
-// Función para cargar y convertir la imagen
+// CONFIGURACIÓN GENERAL DE LA IMPRESORA
+const PRINTER_SETTINGS = {
+    maxLineLength: 32,
+    boldOn: '\x1b\x45\x01',
+    boldOff: '\x1b\x45\x00',
+    encoding: 'CP850',
+    maxImageWidth: 256,
+    maxImageHeight: 256,
+    serviceUUID: '000018f0-0000-1000-8000-00805f9b34fb',
+    characteristicUUID: '00002af1-0000-1000-8000-00805f9b34fb',
+};
+
+// UTILIDADES
+const centerText = (text) => {
+    const spaces = Math.max(0, PRINTER_SETTINGS.maxLineLength - text.length);
+    const leftPadding = Math.floor(spaces / 2);
+    const rightPadding = spaces - leftPadding;
+    return ' '.repeat(leftPadding) + text + ' '.repeat(rightPadding);
+};
+
+const formatearFecha = (fechaStr) => {
+    const fecha = new Date(fechaStr + 'T00:00:00Z');
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const año = fecha.getFullYear();
+    return `${dia}/${mes}/${año}`;
+};
+
+function formatProductLine({ nombre, precio, cantidad, descuento, montoDescuento }) {
+    const subtotal = precio * cantidad - (montoDescuento || 0);
+    const subtotalStr = `$${subtotal.toFixed(2)}`;
+    const detalle = `$${precio} x ${cantidad}${descuento ? ` - $${montoDescuento}` : ''}`;
+    const leftPart = '  ' + detalle;
+    const spaces = Math.max(0, PRINTER_SETTINGS.maxLineLength - leftPart.length - subtotalStr.length - 1);
+    return `${nombre}\n${leftPart}${' '.repeat(spaces)}${subtotalStr}`;
+}
+
+// CREACIÓN DEL CONTENIDO DEL TICKET
+function createTicketContent({ noNota, nombreCliente, fechaCompra, productos, impuestos, porcentajeImpuestos, dineroImpuestos, envio, montoEnvio, tipoPago, total }) {
+    const boldOn = PRINTER_SETTINGS.boldOn;
+    const boldOff = PRINTER_SETTINGS.boldOff;
+
+    return [
+        boldOn + centerText('') + boldOff,
+        boldOn + centerText('Los Destilados') + boldOff,
+        boldOn + centerText('Querétaro, Querétaro') + boldOff,
+        ...'\nNuestros Licores son disfrute,\nson diversión, son felicidad,\nson sinónimo de celebración\n '.split('\n').map(centerText),
+        `Número de Nota: ${noNota}`,
+        `Cliente: ${nombreCliente}`,
+        `Fecha de Compra: ${formatearFecha(fechaCompra)}`,
+        '--------------------------------',
+        ...productos.map(formatProductLine),
+        impuestos ? `Impuestos ${porcentajeImpuestos}%: ${' '.repeat(10)}$${dineroImpuestos}` : null,
+        envio ? `Envío: ${' '.repeat(20)}$${montoEnvio}` : null,
+        boldOn + `Total:${' '.repeat(17)}$${total.toFixed(2)}` + boldOff,
+        tipoPago,
+        '--------------------------------',
+        ...'Se admiten cambios y\ndevoluciones en mercancia, en\nun plazo de 30 días apartir de\nsu fecha de compra y\npresentando la nota.\nConsulta términos y \ncondiciones de la garantia.\n\nSiguienos en instagram\n@losdestiladosqro\n\nCONSERVAR SU NOTA\nPARA CUALQUIER ACLARACIÓN\n\nContamos con facturación\npregunta por este servicio vía\nWhatsapp 4461283277\n¡Gracias por su compra!'.split('\n').map(centerText)
+    ].filter(Boolean).join('\n');
+}
+
+// MANEJO DE IMAGEN
 async function loadAndConvertImage(imageUrl) {
     try {
         const img = await loadImage(imageUrl);
-
-        // Redimensionar la imagen para mejorar el rendimiento
-        const maxWidth = 256; // Ejemplo de tamaño máximo
-        const maxHeight = 256;
 
         const aspectRatio = img.width / img.height;
         let width = img.width;
         let height = img.height;
 
-        if (width > maxWidth) {
-            width = maxWidth;
-            height = Math.round(maxWidth / aspectRatio);
+        if (width > PRINTER_SETTINGS.maxImageWidth) {
+            width = PRINTER_SETTINGS.maxImageWidth;
+            height = Math.round(width / aspectRatio);
         }
-        if (height > maxHeight) {
-            height = maxHeight;
-            width = Math.round(maxHeight * aspectRatio);
+        if (height > PRINTER_SETTINGS.maxImageHeight) {
+            height = PRINTER_SETTINGS.maxImageHeight;
+            width = Math.round(height * aspectRatio);
         }
 
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height); // Redibujar la imagen redimensionada
+        ctx.drawImage(img, 0, 0, width, height); 
 
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const rasterData = convertImageToRasterWithThreshold(imageData);
@@ -38,18 +94,16 @@ async function loadAndConvertImage(imageUrl) {
     }
 }
 
-// Función para convertir la imagen a formato raster con umbral (thresholding)
 function convertImageToRasterWithThreshold(imageData) {
     const width = imageData.width;
     const height = imageData.height;
     const data = imageData.data;
 
     const adjustedWidth = Math.ceil(width / 8) * 8;
-
     const rasterData = new Uint8Array((adjustedWidth / 8) * height);
+
     let byteIndex = 0;
     let bitIndex = 0;
-
     const THRESHOLD = 128;
 
     for (let y = 0; y < height; y++) {
@@ -70,23 +124,20 @@ function convertImageToRasterWithThreshold(imageData) {
     return rasterData;
 }
 
-// Función para imprimir la imagen
 async function printImage(printerCharacteristic, rasterData, width, height) {
-    const ESC = '\x1B';
-    const GS = '\x1D';
-
     const command = [];
-    command.push(...[0x1D, 0x76, 0x30, 0x00]);
+    command.push(0x1B, 0x61, 0x01); 
+    command.push(0x1D, 0x76, 0x30, 0x00); 
     command.push((width / 8) & 0xff);
     command.push((width / 8) >> 8);
     command.push(height & 0xff);
     command.push(height >> 8);
     command.push(...rasterData);
+    command.push(0x1B, 0x61, 0x00); 
 
     await sendInChunks(printerCharacteristic, command);
 }
 
-// Función para enviar datos en chunks
 async function sendInChunks(printerCharacteristic, data) {
     const MAX_SIZE = 512;
 
@@ -96,26 +147,17 @@ async function sendInChunks(printerCharacteristic, data) {
     }
 }
 
-// Función para conectar a la impresora Bluetooth
+// CONEXIÓN BLUETOOTH
 async function connectToPrinter() {
     try {
         const device = await navigator.bluetooth.requestDevice({
             acceptAllDevices: true,
-            optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'],
+            optionalServices: [PRINTER_SETTINGS.serviceUUID],
         });
 
         const server = await device.gatt.connect();
-
-        if (!server.connected) {
-            throw new Error('El servidor GATT no está conectado.');
-        }
-
-        const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
-        const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
-
-        if (!characteristic) {
-            throw new Error('No se encontró una característica de impresión válida.');
-        }
+        const service = await server.getPrimaryService(PRINTER_SETTINGS.serviceUUID);
+        const characteristic = await service.getCharacteristic(PRINTER_SETTINGS.characteristicUUID);
 
         return characteristic;
     } catch (error) {
@@ -125,72 +167,22 @@ async function connectToPrinter() {
     }
 }
 
-// Función principal para imprimir el ticket
+// FUNCIÓN PRINCIPAL
 export async function printTicket(venta) {
     try {
         const printerCharacteristic = await connectToPrinter();
         const ticketContent = createTicketContent(venta);
-        const encodedContent = iconv.encode(ticketContent, 'CP850');
-        const encoder = new escposEncoder();
+        const encodedContent = iconv.encode(ticketContent, PRINTER_SETTINGS.encoding);
 
-        // Cargar y convertir la imagen
         const imageUrl = '/images/logoX2.png';
         const { rasterData, width, height } = await loadAndConvertImage(imageUrl);
 
-        // Imprimir la imagen
         await printImage(printerCharacteristic, rasterData, width, height);
+        await sendInChunks(printerCharacteristic, encodedContent);
 
-        // Codificar el contenido del ticket
-        const ticketEncoded = encoder
-            .raw(rasterData) // Agregar la imagen al inicio del ticket
-            .raw(encodedContent) // Agregar el contenido de texto al ticket
-            .newline()
-            .cut()
-            .encode();
-
-        await sendInChunks(printerCharacteristic, ticketEncoded);
         alert('Ticket enviado a la impresora!');
     } catch (error) {
         console.error('Error en el proceso de impresión:', error);
         alert('Hubo un error al imprimir el ticket.');
     }
-}
-
-function createTicketContent({ noNota, nombreCliente, fechaCompra, productos, impuestos, porcentajeImpuestos, dineroImpuestos, envio, montoEnvio, tipoPago, total }) {
-    const maxLineLength = 32;
-
-    const centerText = (text) => {
-        const spaces = Math.max(0, maxLineLength - text.length);
-        const leftPadding = Math.floor(spaces / 2);
-        const rightPadding = spaces - leftPadding;
-        return ' '.repeat(leftPadding) + text + ' '.repeat(rightPadding);
-    };
-
-    const boldOn = '\x1b\x45\x01';
-    const boldOff = '\x1b\x45\x00';
-
-    let content = [
-        boldOn + centerText('Los Destilados') + boldOff,
-        boldOn + centerText('Querétaro, Querétaro') + boldOff + '\n',
-        ...'Nuestros Licores son disfrute, \nson diversión, son felicidad, \nson sinónimo de celebración'.split('\n').map(centerText) + '\n',
-        `Número de Nota: ${noNota}`,
-        `Cliente: ${nombreCliente}`,
-        `Fecha de Compra: ${fechaCompra}`,
-        '--------------------------------',
-        ...productos.map(formatProductLine) + '\n',
-        impuestos && `Impuestos ${porcentajeImpuestos}%: ${' '.repeat(10)}$${dineroImpuestos}`,
-        envio && `Envío: $${montoEnvio}`,
-        boldOn + `Total:${' '.repeat(17)}$${total.toFixed(2)}` + boldOff,
-        tipoPago,
-        '--------------------------------\n',
-	...'Se admiten cambios y\ndevoluciones en mercancia, en\nun plazo de 30 días apartir de\nsu fecha de compra y\npresentando la nota.\nConsulta términos y \n condiciones de la garantia.\n\nSiguienos en instagram\n@losdestiladosqro\n\nCONSERVAR SU NOTA\nPARA CUALQUIER ACLARACIÓN\n\nContamos con facturación\npregunta por este servicio vía\nWhatsapp 4461283277\n\n¡Gracias por su compra!'.split('\n').map(centerText) + '\n',
-    ].filter(Boolean).join('\n');
-
-    return content;
-}
-
-function formatProductLine({ nombre, precio, cantidad, descuento, montoDescuento }) {
-    const subtotal = precio * cantidad - (montoDescuento || 0);
-    const namePadding = ' '.repeat(Math.max(0, 23 - nombre.length));
-    return `${nombre}${namePadding} $${subtotal.toFixed(2)}\n  $${precio} x ${cantidad}${descuento ? `  - $${montoDescuento} descuento` : ''}`;
 }

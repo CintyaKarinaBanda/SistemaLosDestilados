@@ -54,12 +54,12 @@ const InventarioEntrada = () => {
       const productsList = querySnapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
         .filter(doc => {
-          const fechaEntrada = new Date(doc.fechaEntrada);
-          const mesEntrada = fechaEntrada.toLocaleString('default', { month: 'long' });
-          const anioEntrada = fechaEntrada.getFullYear();
-          return mesEntrada.toLowerCase() === mesActual.toLowerCase() && anioEntrada === Number(anioActual);
+          const fechaIngreso = new Date(doc.fechaIngreso);
+          const mesIngreso = fechaIngreso.toLocaleString('default', { month: 'long' });
+          const anioIngreso = fechaIngreso.getFullYear();
+          return mesIngreso.toLowerCase() === mesActual.toLowerCase() && anioIngreso === Number(anioActual);
         })
-        .sort((a, b) => b.noNota - a.noNota);
+        .sort((a, b) => b.noNota - a.noNota);      
       setProductos(productsList);
       setProductosOrigin(productsList);
     } catch (error) {
@@ -77,7 +77,7 @@ const InventarioEntrada = () => {
   };
 
   //Funciones del Modal
-  const handleShow = (product = null, editing = false) => {
+  const handleShow = (product = null, editing = false) => {    
     setCurrentProduct(product);
     setIsEditing(editing);
     setShow(true);
@@ -148,9 +148,9 @@ const InventarioEntrada = () => {
               <thead>
                 <tr>
                   <th>Destilado</th>
-                  <th>Código QR</th>
+                  <th>Cantidad De Cajas</th>
                   <th>Prooveedor</th>
-                  <th>Fecha de Entrada</th>
+                  <th>Monto de Inversion</th>
                   <th>Editar / Borrar</th>
                 </tr>
               </thead>
@@ -158,9 +158,9 @@ const InventarioEntrada = () => {
                 {productos.map((producto) => (
                   <tr key={producto.id}>
                     <td>{producto.nombre}</td>
-                    <td>{producto.codigoQR}</td>
+                    <td>{producto.cantidad}</td>
                     <td>{producto.proveedor}</td>
-                    <td>{producto.fechaEntrada}</td>
+                    <td>$ {producto.monto}</td>
                     <td>
                       <button className="btn btn-secondary" onClick={() => handleShow(producto, true)}>
                         <FontAwesomeIcon icon={faEdit} />

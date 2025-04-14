@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { addDoc, collection, deleteField, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
 import db from "../../database/credentials";
 
-const PuntoDeVenta = ({venta, isEditing}) => {     
+const PuntoDeVenta = ({ venta, isEditing }) => {
     const [noNota, setNoNota] = useState(venta?.noNota || '');
 
     useEffect(() => {
@@ -16,7 +16,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                     if (infoNota.year.toString() === new Date().getFullYear().toString()) {
                         setNoNota(infoNota.num);
                     } else {
-                        await updateDoc(doc(db, 'note', 'qarRrDpf4P2jg3r6rYQX'), { num: 1, year: new Date().getFullYear().toString() }); 
+                        await updateDoc(doc(db, 'note', 'qarRrDpf4P2jg3r6rYQX'), { num: 1, year: new Date().getFullYear().toString() });
                         setNoNota(1);
                     }
                 } catch (err) {
@@ -26,11 +26,11 @@ const PuntoDeVenta = ({venta, isEditing}) => {
         };
 
         obtenerNoNota();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-    
+
     const [total, setTotal] = useState(venta?.total || 0);
-    const [totalOrigin, setTotalOrigin] = useState(venta? (venta.impuestos===true? (venta.total-venta.dineroImpuestos): venta.total): 0);
+    const [totalOrigin, setTotalOrigin] = useState(venta ? (venta.impuestos === true ? (venta.total - venta.dineroImpuestos) : venta.total) : 0);
 
     const [nombreCliente, setnombreCliente] = useState(venta?.nombreCliente || '');
 
@@ -40,18 +40,18 @@ const PuntoDeVenta = ({venta, isEditing}) => {
 
     const [envio, setEnvio] = useState(venta?.envio || false);
     const [montoEnvio, setMontoEnvio] = useState(venta?.montoEnvio || "");
-    
+
     const [proveedorCheck, setProveedorCheck] = useState(venta?.proveedor || false);
     const [proveedor, setProveedor] = useState(venta?.proveedor || "Fernanda");
 
     const [fechaCompraCheck, setFechaCompraCheck] = useState(venta?.fechaCompraCheck || false);
     const [fechaCompra, setFechaCompra] = useState(
-        venta?.fechaCompra 
+        venta?.fechaCompra
             ? venta.fechaCompra
             : new Date().toLocaleDateString('en-CA')
     );
-    
-    
+
+
     const [tipoPago, setTipoPago] = useState(venta?.tipoPago || '');
 
 
@@ -64,11 +64,11 @@ const PuntoDeVenta = ({venta, isEditing}) => {
         }
         if (!proveedorCheck) setProveedor("Fernanda");
         if (!fechaCompraCheck) {
-            const fechaLocal = new Date().toLocaleDateString('en-CA'); 
+            const fechaLocal = new Date().toLocaleDateString('en-CA');
             setFechaCompra(fechaLocal);
         }
-        
-        if (!impuestos){ 
+
+        if (!impuestos) {
             setPorcentajeImpuestos(16);
             setDineroImpuestos(0)
             setTotal(totalOrigin);
@@ -77,7 +77,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
             setPorcentajeImpuestos(16);
             setTotal(totalOrigin + newMontoImpuestos);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [envio, impuestos, proveedorCheck, fechaCompraCheck]);
 
     useEffect(() => {
@@ -87,7 +87,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                 const productsList = querySnapshot.docs
                     .map(doc => ({ id: doc.id, ...doc.data() }))
                     .sort((a, b) => a.name.localeCompare(b.name));
-                setProductosData(productsList);                
+                setProductosData(productsList);
             } catch (error) {
                 console.error("Error fetching documents: ", error);
             }
@@ -99,24 +99,30 @@ const PuntoDeVenta = ({venta, isEditing}) => {
     const [productos, setProductos] = useState(venta?.productos || []);
 
     const handleAddProducto = () => {
-        setProductos([
-            ...productos,
-            {
-                id: Date.now(),
-                nombre: "",
-                cantidad: "",
-                precio: "",
-                costo: "",
-                ganancia: "",
-                negocio: "",
-                sujetos: "",
-                descuento: false,
-                montoDescuento: "",
-                codigosQRCheck: false,
-                codigosQR: []
-            },
-        ]);
+        const productosActualizados = productos.map((p) => ({
+            ...p,
+            expandido: false,
+        }));
+    
+        const nuevoProducto = {
+            id: Date.now(),
+            nombre: "",
+            cantidad: "",
+            precio: "",
+            costo: "",
+            ganancia: "",
+            negocio: "",
+            sujetos: "",
+            descuento: false,
+            montoDescuento: "",
+            codigosQRCheck: false,
+            codigosQR: [],
+            expandido: true, 
+        };
+    
+        setProductos([...productosActualizados, nuevoProducto]);
     };
+    
 
     const handleRemoveProducto = (id, cantidad, precio, montoDescuento) => {
         const newTotal = total - (parseFloat(precio || 0) * parseFloat(cantidad || 0)) + parseFloat(montoDescuento || 0);
@@ -137,7 +143,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                         updatedProducto.codigosQR = newCodigosQR;
                     } else {
                         updatedProducto[name] = value;
-                    } 
+                    }
 
                     if (name === "nombre") {
                         const selectedOption = productosData.find(
@@ -161,23 +167,23 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                         const descuentoPrevio = parseFloat(producto.montoDescuento) || 0;
                         updatedProducto.ganancia += descuentoPrevio;
                         updatedProducto.ganancia -= descuentoActual;
-                        updatedProducto.negocio = parseFloat(20.86 * updatedProducto.ganancia / 100).toFixed(2); 
-                        updatedProducto.sujetos = parseFloat(39.56 * updatedProducto.ganancia / 100).toFixed(2); 
-                        updatedProducto.montoDescuento = descuentoActual; 
+                        updatedProducto.negocio = parseFloat(20.86 * updatedProducto.ganancia / 100).toFixed(2);
+                        updatedProducto.sujetos = parseFloat(39.56 * updatedProducto.ganancia / 100).toFixed(2);
+                        updatedProducto.montoDescuento = descuentoActual;
                     }
-        
+
                     return updatedProducto;
                 }
                 return producto;
             })
-        );        
-    
+        );
+
         if (name === "cantidad" || name === "precio" || name === "montoDescuento") {
             const updatedProduct = productos.find((producto) => producto.id === id);
             const cantidad = name === "cantidad" ? value : updatedProduct.cantidad;
             const precio = name === "precio" ? value : updatedProduct.precio;
             const descuento = name === "montoDescuento" ? value : updatedProduct.montoDescuento;
-    
+
             const nuevoTotal = productos.reduce((acc, producto) => {
                 const productCantidad = producto.id === id ? cantidad : producto.cantidad;
                 const productPrecio = producto.id === id ? precio : producto.precio;
@@ -203,17 +209,17 @@ const PuntoDeVenta = ({venta, isEditing}) => {
             fechaCompraCheck: true,
             proveedorCheck: true,
         };
-    
-        if (impuestos) { 
+
+        if (impuestos) {
             ventaRegistro.impuestos = impuestos;
             ventaRegistro.porcentajeImpuestos = porcentajeImpuestos;
             ventaRegistro.dineroImpuestos = dineroImpuestos;
         }
-        if (envio) { 
+        if (envio) {
             ventaRegistro.envio = envio;
             ventaRegistro.montoEnvio = montoEnvio;
         }
-        
+
         try {
             if (isEditing && venta?.id) {
                 const productSnapshot = await getDoc(doc(db, 'sales', venta.id));
@@ -225,12 +231,12 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                             camposParaEliminar[key] = deleteField();
                         }
                     });
-    
+
                     await updateDoc(doc(db, 'sales', venta.id), {
                         ...ventaRegistro,
                         ...camposParaEliminar,
                     });
-    
+
                     alert("Venta actualizada exitosamente");
                 }
             } else {
@@ -238,7 +244,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                 updateDoc(doc(db, 'note', 'qarRrDpf4P2jg3r6rYQX'), { num: parseFloat(noNota) + 1 });
                 setNoNota(Number(noNota) + 1);
                 alert("Venta agregada exitosamente");
-    
+
                 setProductos([]);
                 setTotal(0);
                 setTotalOrigin(0);
@@ -256,8 +262,16 @@ const PuntoDeVenta = ({venta, isEditing}) => {
             alert("Hubo un error al agregar la venta");
         }
     };
-    
-    
+
+    const handleToggleExpand = (id) => {
+        setProductos((prev) =>
+          prev.map((p) =>
+            p.id === id ? { ...p, expandido: !p.expandido } : p
+          )
+        );
+      };
+      
+
     return (
         <div className="container mb-5">
             <div className="card">
@@ -267,144 +281,167 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                 <div className="card-body">
                     <div className="row mb-3">
                         <div className="col-md-6 mb-2 mb-md-0">
-                            <input className="form-control" type="text" placeholder="Número de nota" value={noNota} onInput={(e)=>setNoNota(e.target.value.toUpperCase())} required autoFocus />
+                            <input className="form-control" type="text" placeholder="Número de nota" value={noNota} onInput={(e) => setNoNota(e.target.value.toUpperCase())} required autoFocus />
                         </div>
                         <div className="col-md-6 mb-2 mb-md-0">
-                            <input className="form-control" type="text" placeholder="Nombre del Cliente" value={nombreCliente} onInput={(e)=>setnombreCliente(e.target.value.toUpperCase())} required />
+                            <input className="form-control" type="text" placeholder="Nombre del Cliente" value={nombreCliente} onInput={(e) => setnombreCliente(e.target.value.toUpperCase())} required />
                         </div>
                     </div>
                     <button type="button" className="btn btn-primary mb-3 w-100" onClick={handleAddProducto}>Añadir Producto</button>
                     <div id="productos">
                         {productos.map((producto) => (
-                            <div key={producto.id} className="inputs-div mb-3">
-                                <div className="d-flex mb-3">
-                                    <button
-                                        onClick={() => handleRemoveProducto(producto.id, producto.cantidad, producto.precio, producto.montoDescuento)}
-                                        className="btn btn-danger btn-sm"
-                                        style={{ marginRight: "1rem" }} >Eliminar
-                                    </button>
-                                    <input
-                                        type="text"
-                                        name="nombre"
-                                        list={`productosOpciones-${producto.id}`}
-                                        className="form-control"
-                                        placeholder="Producto"
-                                        value={producto.nombre}
-                                        onChange={(e) => handleInputChange(producto.id, "nombre", e.target.value)}
-                                    />
-                                    <datalist id={`productosOpciones-${producto.id}`}>
-                                        {productosData.map((product, index) => (
-                                            <option 
-                                                key={index} 
-                                                value={product.name} 
-                                                data-precio={product.price}
-                                                data-costo={product.cost}
-                                                data-ganancia={product.profit}
-                                                data-sujetos={product.businessProfit}
-                                                data-negocio={product.subjectProfit}
-                                            />
-                                        ))}
-                                    </datalist>
-                                    <input
-                                        type="number"
-                                        name="cantidad"
-                                        className="form-control"
-                                        placeholder="Cantidad de botellas"
-                                        value={producto.cantidad}
-                                        onChange={(e) => handleInputChange(producto.id, "cantidad", e.target.value)}
-                                    />
+                            <div key={producto.id} className="mb-3 border rounded p-2">
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{producto.nombre || "Producto sin nombre"}</strong> – {producto.cantidad || 0} u. – Total: $
+                                        {(producto.precio - (producto.montoDescuento || 0)) * (producto.cantidad || 0)}
+                                    </div>
+                                    <div>
+                                        <button
+                                            onClick={() => handleToggleExpand(producto.id)}
+                                            className="btn btn-sm btn-secondary me-2"
+                                        >
+                                            {producto.expandido ? "Ocultar" : "Editar"}
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                handleRemoveProducto(producto.id, producto.cantidad, producto.precio, producto.montoDescuento)
+                                            }
+                                            className="btn btn-sm btn-danger"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="d-flex mb-3">
-                                    <input
-                                        type="checkbox"
-                                        id={`descuento-${producto.id}`}
-                                        className="form-check-input"
-                                        checked={producto.descuento}
-                                        onChange={(e) => handleInputChange(producto.id, "descuento", e.target.checked)}
-                                    />
-                                    <label htmlFor={`descuento-${producto.id}`} style={{ marginLeft: "5px" }}>
-                                        Descuento
-                                    </label>
-                                    {producto.descuento && (
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            style={{ marginLeft: "15px" }}
-                                            placeholder="Monto del descuento"
-                                            value={producto.montoDescuento}
-                                            onChange={(e) => handleInputChange(producto.id, "montoDescuento", e.target.value)}
-                                        />
-                                    )}
-                                </div>
-                                <div className="d-flex mb-3">
-                                    <input
-                                        type="text"
-                                        name="precio"
-                                        className="form-control"
-                                        placeholder="Precio"
-                                        value={producto.precio}
-                                        onChange={(e) => handleInputChange(producto.id, "precio", e.target.value)}
-                                    />
-                                    <input
-                                        type="text"
-                                        name="costo"
-                                        className="form-control"
-                                        placeholder="Costo"
-                                        value={producto.costo}
-                                        onChange={(e) => handleInputChange(producto.id, "costo", e.target.value)}
-                                    />
-                                    <input
-                                        type="text"
-                                        name="ganancia"
-                                        className="form-control"
-                                        placeholder="Ganancia"
-                                        value={producto.ganancia}
-                                        onChange={(e) => handleInputChange(producto.id, "ganancia", e.target.value)}
-                                    />
-                                </div>
-                                <div className="d-flex mb-3">
-                                    <input
-                                        type="text"
-                                        name="sujetoA"
-                                        className="form-control"
-                                        placeholder="Negocio"
-                                        value={producto.negocio}
-                                        onChange={(e) => handleInputChange(producto.id, "negocio", e.target.value)}
-                                    />
-                                    <input
-                                        type="text"
-                                        name="sujetoB"
-                                        className="form-control"
-                                        placeholder="Sujetos"
-                                        value={producto.sujetos}
-                                        onChange={(e) => handleInputChange(producto.id, "sujetos", e.target.value)}
-                                    />
-                                </div>
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        id={`codigosQRCheck-${producto.id}`}
-                                        className="form-check-input"
-                                        checked={producto.codigosQRCheck}
-                                        onChange={(e) => handleInputChange(producto.id, "codigosQRCheck", e.target.checked)}
-                                    />
-                                    <label htmlFor={`codigosQRCheck-${producto.id}`} className="form-check-label ms-2">Codigos QR</label>
-                                    {producto.codigosQRCheck && 
-                                        Array.from({ length: producto.cantidad || 1 }, (_, index) => (
+
+                                {producto.expandido && (
+                                    <div className="mt-3">
+                                        <div className="d-flex mb-2">
                                             <input
-                                                key={index} 
                                                 type="text"
-                                                className="form-control mt-2 d-block"
-                                                placeholder="Codigo QR"
-                                                value={producto.codigosQR[index] || ""}
-                                                onChange={(e) => handleInputChange(producto.id, `codigosQR[${index}]`, e.target.value)}
+                                                name="nombre"
+                                                list={`productosOpciones-${producto.id}`}
+                                                className="form-control me-2"
+                                                placeholder="Producto"
+                                                value={producto.nombre}
+                                                onChange={(e) => handleInputChange(producto.id, "nombre", e.target.value)}
                                             />
-                                        ))
-                                    }
-                                </div>
+                                            <datalist id={`productosOpciones-${producto.id}`}>
+                                                {productosData.map((product, index) => (
+                                                    <option
+                                                        key={index}
+                                                        value={product.name}
+                                                        data-precio={product.price}
+                                                        data-costo={product.cost}
+                                                        data-ganancia={product.profit}
+                                                        data-sujetos={product.businessProfit}
+                                                        data-negocio={product.subjectProfit}
+                                                    />
+                                                ))}
+                                            </datalist>
+                                            <input
+                                                type="number"
+                                                name="cantidad"
+                                                className="form-control"
+                                                placeholder="Cantidad"
+                                                value={producto.cantidad}
+                                                onChange={(e) => handleInputChange(producto.id, "cantidad", e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="form-check mb-2">
+                                            <input
+                                                type="checkbox"
+                                                id={`descuento-${producto.id}`}
+                                                className="form-check-input"
+                                                checked={producto.descuento}
+                                                onChange={(e) => handleInputChange(producto.id, "descuento", e.target.checked)}
+                                            />
+                                            <label htmlFor={`descuento-${producto.id}`} className="form-check-label ms-2">
+                                                Descuento
+                                            </label>
+                                            {producto.descuento && (
+                                                <input
+                                                    type="text"
+                                                    className="form-control mt-2"
+                                                    placeholder="Monto del descuento"
+                                                    value={producto.montoDescuento}
+                                                    onChange={(e) => handleInputChange(producto.id, "montoDescuento", e.target.value)}
+                                                />
+                                            )}
+                                        </div>
+                                        <div className="d-flex mb-2">
+                                            <input
+                                                type="text"
+                                                name="precio"
+                                                className="form-control me-2"
+                                                placeholder="Precio"
+                                                value={producto.precio}
+                                                onChange={(e) => handleInputChange(producto.id, "precio", e.target.value)}
+                                            />
+                                            <input
+                                                type="text"
+                                                name="costo"
+                                                className="form-control me-2"
+                                                placeholder="Costo"
+                                                value={producto.costo}
+                                                onChange={(e) => handleInputChange(producto.id, "costo", e.target.value)}
+                                            />
+                                            <input
+                                                type="text"
+                                                name="ganancia"
+                                                className="form-control"
+                                                placeholder="Ganancia"
+                                                value={producto.ganancia}
+                                                onChange={(e) => handleInputChange(producto.id, "ganancia", e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="d-flex mb-2">
+                                            <input
+                                                type="text"
+                                                name="negocio"
+                                                className="form-control me-2"
+                                                placeholder="Negocio"
+                                                value={producto.negocio}
+                                                onChange={(e) => handleInputChange(producto.id, "negocio", e.target.value)}
+                                            />
+                                            <input
+                                                type="text"
+                                                name="sujetos"
+                                                className="form-control"
+                                                placeholder="Sujetos"
+                                                value={producto.sujetos}
+                                                onChange={(e) => handleInputChange(producto.id, "sujetos", e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="form-check">
+                                            <input
+                                                type="checkbox"
+                                                id={`codigosQRCheck-${producto.id}`}
+                                                className="form-check-input"
+                                                checked={producto.codigosQRCheck}
+                                                onChange={(e) => handleInputChange(producto.id, "codigosQRCheck", e.target.checked)}
+                                            />
+                                            <label htmlFor={`codigosQRCheck-${producto.id}`} className="form-check-label ms-2">
+                                                Códigos QR
+                                            </label>
+                                            {producto.codigosQRCheck &&
+                                                Array.from({ length: producto.cantidad || 1 }, (_, index) => (
+                                                    <input
+                                                        key={index}
+                                                        type="text"
+                                                        className="form-control mt-2"
+                                                        placeholder={`Código QR #${index + 1}`}
+                                                        value={producto.codigosQR?.[index] || ""}
+                                                        onChange={(e) => handleInputChange(producto.id, `codigosQR[${index}]`, e.target.value)}
+                                                    />
+                                                ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
+
 
                     <div className="row mb-3">
                         <div className="col-md-6">
@@ -447,7 +484,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                                 <label htmlFor="pagoTransferencia" className="form-check-label">Transferencia</label>
                             </div>
                         </div>
-                        </div>
+                    </div>
 
 
                     <div className="row mb-3">
@@ -457,23 +494,23 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                                 <label htmlFor="envio" className="form-check-label">Envio</label>
                                 {envio && (
                                     <input
-                                    className="form-control ms-3"
-                                    type="number"
-                                    placeholder="Monto del Envio $"
-                                    value={montoEnvio}
-                                    onChange={(e) => {
-                                      const newMontoEnvio = parseFloat(e.target.value) || 0;
-                                      const diferencia = newMontoEnvio - montoEnvio;
-                                      setMontoEnvio(newMontoEnvio);
-                                      setTotal(total + diferencia);
-                                    }}
-                                  />
+                                        className="form-control ms-3"
+                                        type="number"
+                                        placeholder="Monto del Envio $"
+                                        value={montoEnvio}
+                                        onChange={(e) => {
+                                            const newMontoEnvio = parseFloat(e.target.value) || 0;
+                                            const diferencia = newMontoEnvio - montoEnvio;
+                                            setMontoEnvio(newMontoEnvio);
+                                            setTotal(total + diferencia);
+                                        }}
+                                    />
                                 )}
                             </div>
                         </div>
                         <div className="col-md-6">
                             <div className="form-check d-flex align-items-center">
-                                <input type="checkbox" id="impuestos" name="impuestos" className="form-check-input me-2" checked={impuestos} onChange={(e) => {setImpuestos(e.target.checked); setDineroImpuestos((porcentajeImpuestos * totalOrigin) / 100);}} />
+                                <input type="checkbox" id="impuestos" name="impuestos" className="form-check-input me-2" checked={impuestos} onChange={(e) => { setImpuestos(e.target.checked); setDineroImpuestos((porcentajeImpuestos * totalOrigin) / 100); }} />
                                 <label htmlFor="impuestos" className="form-check-label">Impuestos</label>
                                 {impuestos && (
                                     <div className="d-flex align-items-center ms-3">
@@ -495,7 +532,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                                         </p>
                                     </div>
                                 )}
-                         
+
                             </div>
                         </div>
                     </div>
@@ -521,7 +558,7 @@ const PuntoDeVenta = ({venta, isEditing}) => {
                     </div>
                     <h3 className="mb-3">Total: ${total}</h3>
                     <div className="d-flex justify-content-between">
-                        <button type="button" className="btn btn-secondary w-25 me-2" onClick={() => {setProductos([]); setTotal(0); setTotalOrigin(0)}}>Limpiar</button>
+                        <button type="button" className="btn btn-secondary w-25 me-2" onClick={() => { setProductos([]); setTotal(0); setTotalOrigin(0) }}>Limpiar</button>
                         <button type="button" className="btn btn-primary w-75 ms-2" onClick={generarVenta}>{isEditing ? 'Editar Venta' : 'Generar Venta'}</button>
                     </div>
                 </div>

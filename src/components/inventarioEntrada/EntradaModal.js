@@ -1,115 +1,119 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import db from '../../database/credentials';
-import { addDoc, updateDoc, collection, doc } from 'firebase/firestore';
+import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 
 const EntradaModal = ({ show, handleClose, product, isEditing }) => {
-    const [productName, setProductName] = useState(product?.name || '');
-    const [productQR, setProductQR] = useState(product?.qr || '');
-    const [provider, setProvider] = useState(product?.provider || 'Fernanda');
-    const [date, setDate] = useState(product?.date || new Date().toISOString().slice(0, 10));
+    const initialState = {
+        productName: '',
+        date: new Date().toLocaleDateString('en-CA'),
+        dateCheck: false,
+        cantidad: '',
+        provider: 'Fernanda',
+        monto: '',
+    };
+
+    const [form, setForm] = useState(initialState);
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
         if (product) {
-            setProductName(product.name || '');
-            setProductQR(product.qr || '');
-            setProvider(product.provider || 'Fernanda');
-            setDate(product.date || new Date().toISOString().slice(0, 10));
+            setForm({
+                productName: product.nombre || '',
+                date: product.fechaIngreso || new Date().toLocaleDateString('en-CA'),
+                dateCheck: !!product.fechaIngreso,
+                cantidad: product.cantidad || '',
+                provider: product.proveedor || 'Fernanda',
+                monto: product.monto || '',
+            });
         } else {
-            setProductName('');
-            setProductQR('');
-            setProvider('Fernanda');
-            setDate(new Date().toISOString().slice(0, 10));
+            setForm(initialState);
         }
     }, [product]);
 
+    const handleChange = (field) => (e) => {
+        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setForm((prev) => ({ ...prev, [field]: value }));
+    };
+
     const validateFields = () => {
         const newErrors = {};
-        if (productName === '') newErrors.productName = 'Required';
-        if (productQR === '' ) newErrors.productQR = 'Required';
-        if (provider === '') newErrors.provider = 'Required';
-        if (date  === '') newErrors.productProfit = 'Required';
+        if (!form.productName) newErrors.productName = 'Requerido';
+        if (!form.cantidad) newErrors.cantidad = 'Requerido';
+        if (!form.provider) newErrors.provider = 'Requerido';
+        if (!form.monto) newErrors.monto = 'Requerido';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-    
+
     const saveProduct = async () => {
         if (!validateFields()) return;
 
         const productData = {
-            nombre: productName,
-            codigoQR: productQR,
-            proveedor: provider,
-            fechaEntrada: date
+            nombre: form.productName,
+            cantidad: parseInt(form.cantidad),
+            proveedor: form.provider,
+            monto: parseFloat(form.monto),
+            fechaIngreso: form.date,
         };
 
         try {
             if (isEditing && product?.id) {
                 const productRef = doc(db, 'entries', product.id);
                 await updateDoc(productRef, productData);
-                handleClose();
             } else {
                 await addDoc(collection(db, 'entries'), productData);
-                alert('Producto guardado');            
+                alert('Producto guardado');
             }
+            handleClose();
         } catch (error) {
-            console.error("Error saving document: ", error);
+            console.error('Error saving document:', error);
         }
     };
 
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
-                <Modal.Title>{isEditing ? 'Edititar Producto' : 'Agregar Producto'}</Modal.Title>
+                <Modal.Title>{isEditing ? 'Editar Producto' : 'Agregar Producto'}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <div className="mb-3">
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="productName"
-                        value={productName}
-                        placeholder="Nombre del Destilado"
-                        onChange={(e) => setProductName(e.target.value)}
-                    />
-                    {errors.productName && <div className="text-danger">{errors.productName}</div>}
-                </div>
-                <div className="mb-3">
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="productQR"
-                        value={productQR}
-                        placeholder="Código QR"
-                        onChange={(e) => setProductQR(e.target.value)}
-                        required
-                    />
-                    {errors.productQR && <div className="text-danger">{errors.productQR}</div>}
-                </div>
-                <div className="mb-3">
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="provider"
-                        value={provider}
-                        placeholder="Proveedor"
-                        onChange={(e) => setProvider(e.target.value)}
-                        required
-                    />
-                    {errors.provider && <div className="text-danger">{errors.provider}</div>}
-                </div>
-                <div className="mb-3">
-                    <input
-                        type="date"
-                        className="form-control"
-                        id="date"
-                        value={date}
-                        placeholder="Fecyha"
-                        onChange={(e) => setDate(e.target.value)}
-                        required
-                    />
-                    {errors.date && <div className="text-danger">{errors.date}</div>}
+                {[
+                    { id: 'productName', placeholder: 'Nombre del Destilado', value: form.productName, type: 'text' },
+                    { id: 'cantidad', placeholder: 'Cantidad de Caja', value: form.cantidad, type: 'text' },
+                    { id: 'provider', placeholder: 'Proveedor', value: form.provider, type: 'text' },
+                    { id: 'monto', placeholder: 'Monto de Inversión', value: form.monto, type: 'number' },
+                ].map(({ id, placeholder, value, type }) => (
+                    <div className="mb-3" key={id}>
+                        <input
+                            type={type}
+                            className="form-control"
+                            id={id}
+                            value={value}
+                            placeholder={placeholder}
+                            onChange={handleChange(id)}
+                        />
+                        {errors[id] && <div className="text-danger">{errors[id]}</div>}
+                    </div>
+                ))}
+                <div className="col-md-6">
+                    <div className="form-check d-flex align-items-center">
+                        <input
+                            type="checkbox"
+                            id="fechaCompraCheck"
+                            className="form-check-input me-2"
+                            checked={form.dateCheck}
+                            onChange={handleChange('dateCheck')}
+                        />
+                        <label htmlFor="fechaCompraCheck" className="form-check-label">Fecha de Compra</label>
+                        {form.dateCheck && (
+                            <input
+                                className="form-control ms-3"
+                                type="date"
+                                value={form.date}
+                                onChange={handleChange('date')}
+                            />
+                        )}
+                    </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>

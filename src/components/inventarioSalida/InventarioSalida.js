@@ -74,7 +74,7 @@ const InventarioSalida = () => {
             const productsList = querySnapshot.docs
                 .map(doc => ({ id: doc.id, ...doc.data() }))
                 .filter(doc => {
-                    const fechaCompra = new Date(doc.fechaCompra);
+                    const fechaCompra = new Date(doc.fechaCompra + 'T00:00:00Z'); 
                     const fechaCompraAjustada = new Date(fechaCompra.getTime() + (fechaCompra.getTimezoneOffset() * 60000));
                     
                     const mesCompra = fechaCompraAjustada.toLocaleString('default', { month: 'long' });
@@ -107,7 +107,6 @@ const InventarioSalida = () => {
     const handlePrint = async (venta) => {
         printTicket(venta);
     };
-    
     
 
     const handleClose = () => {
